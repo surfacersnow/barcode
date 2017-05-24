@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>管理中心</title>
+<link href="../../lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js"></script>
+<script type="text/javascript" src="../../lib/bootstrapDatePicker/js/bootstrap-datetimepicker.js"></script>
+<script type="text/javascript" src="../../lib/bootstrapDatePicker/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script type="text/javascript" src="../../js/common.js" ></script>
+</head>
+<body>
+  <div class="container" style="width: 100%">
+  	  <br/>
+		<button type="button" class="btn btn-primary" onclick="back()">返回</button>
+		<button type="button" class="btn btn-success" onclick="save()">保存</button>
+	  <hr/>	
+		<form class="form-horizontal" >
+		  <div class="form-group">
+		    <label  class="col-sm-1 control-label">发货单号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_ckdh" placeholder="发货单号" readonly="readonly">
+		    </div>
+		     <label  class="col-sm-1 control-label">提单号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_tdh" placeholder="提单号" >
+		    </div>
+		    <label  class="col-sm-1 control-label">客户名称</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_khmc" placeholder="客户名称">
+		    </div>
+		    <label  class="col-sm-1 control-label">目的港</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_mdh" placeholder="目的港">
+		    </div>
+		  </div>
+		   <div class="form-group">
+		    <label  class="col-sm-1 control-label">柜号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_gh" placeholder="柜号">
+		    </div>
+		    <label  class="col-sm-1 control-label">封号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_fh" placeholder="封号">
+		    </div>
+		   <label  class="col-sm-1 control-label">发货日期</label>
+		    <div class="col-sm-2">
+		   		<div class="controls input-append date form_date" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+                    <input type="text" class="form-control"  value="" onchange="checkDate()" id="order_fhrq">
+                    <span class="add-on"><i class="icon-remove"></i></span>
+					<span class="add-on"><i class="icon-th"></i></span>
+                </div>
+				<input type="hidden" id="dtp_input2" value="" /><br/>
+		    </div>
+		   
+		    <label  class="col-sm-1 control-label">制单人</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_zdr" placeholder="制单人"  readonly="readonly">
+		    </div>
+		  </div>
+		</form>
+		<hr />
+		<div class="table-responsive">
+		<table class="table table-striped" id="detailsumid">
+		  <tr>
+			   <td>客户编号</td>
+			   <td>生产编号</td>
+			   <td>客户UPC码</td>
+			   <td>款式</td>
+			   <td>规格</td>
+			   <td>偏距</td>
+			   <td>PCD</td>
+			   <td>中心孔</td>
+			   <td>表面状态</td>
+			   <td>数量</td>
+			   <td>操作</td>
+			 </tr>
+		</table>
+		</div>
+	</div>      
+</body>
+<script type="text/javascript">
+$('.form_date').datetimepicker({
+    language:  'zh-CN',
+    weekStart: 1,
+    todayBtn:  1,
+	autoclose: 1,
+	todayHighlight: 1,
+	startView: 2,
+	minView: 2,
+	forceParse: 0,
+	format: 'yyyy-mm-dd'
+});
+	var ckdh="";
+	$(document).ready(function(){
+		 var thisURL = decodeURI(document.URL);   
+		 var getval =thisURL.split('?')[1];  
+		 var showval= getval.split("=")[1]; 
+		 var fhdinfo=showval.split("&");
+		 ckdh=fhdinfo[0];
+		 $("#order_ckdh").val(fhdinfo[0]);
+		 $("#order_tdh").val(fhdinfo[1]);
+		 $("#order_fhrq").val(fhdinfo[2]);
+		 $("#order_khmc").val(fhdinfo[3]);
+	     $("#order_mdh").val(fhdinfo[4]);
+	     $("#order_gh").val(fhdinfo[5]);
+	     $("#order_fh").val(fhdinfo[6]);
+	     $("#order_zdr").val(fhdinfo[7]);
+	     $("#order_zdsj").val(fhdinfo[8]);
+	     addrow();
+	    
+	})
+	function addrow(){
+		$.ajax({
+	   	   	url:"../../fhdwh/queryDetailInfoByXml?ckdh="+ckdh,
+	   	   	type:"POST",
+	   	   	dataType:"xml",  
+	   	   	error: function(xml){  
+	   	       	alert('数据加载失败！');  
+	   	   	},
+	   		success: function(xml){ 
+	   			var barcodehtml="";
+	   	   		$(xml).find("item").each(function(i){ 
+	   	   			var barcode_khbh=$(this).attr("barcode_khbh");//客户编号
+	   	   			var barcode_sc=$(this).attr("barcode_sc");//生产编号
+	   	   			var barcode_upc=$(this).attr("barcode_upc");//客户UPC码
+	   	   			var barcode_ks=$(this).attr("barcode_ks");//款式
+	   	   			var barcode_gg=$(this).attr("barcode_gg");//规格
+	   	   			var barcode_pj=$(this).attr("barcode_pj");//偏距
+	   	   			var barcode_pcd=$(this).attr("barcode_pcd");//PCD
+	   	   			var barcode_zxk=$(this).attr("barcode_zxk");//中心孔
+	   	   			var barcode_bmzt=$(this).attr("barcode_bmzt");//表面状态
+	   	   			var orderDetail_id=$(this).attr("orderdetail_id");//表面状态
+	   	   			var sl="1";//数量
+		   	   		var trhtml="";
+			   	 	trhtml=trhtml+"<tr>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_khbh+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_sc+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_upc+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_ks+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_gg+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_pj+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_pcd+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_zxk+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_bmzt+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+sl+"</td>";
+			   	 	trhtml=trhtml+"   <td><a href='javascript:void(0)' onclick='removerow(this,\""+orderDetail_id+"\")'>删除</a></td>";
+			   	 	trhtml=trhtml+" </tr>";
+			   	 	addTr("detailsumid", -1, trhtml);
+	   	    	});
+	   	  	}
+	   	});
+		
+	}
+	function removerow(obj,orderDetail_id){
+	  	var postdata = {};
+	    postdata.orderDetail_id=orderDetail_id;
+	    postdata.orderDetail_ckdh=ckdh;
+		var	url = "../../fhdwh/deleteDetailByid";
+		// 提交后台保存数据转换为JSON 格式
+		var data = JSON.stringify(postdata);
+		//保存提交后台
+		if (url){
+			ajaxSubmit(url, data, function(data) {
+				if (parseInt(data['status']) > 0) {
+					alert('删除成功');
+					$(obj).parent().parent().remove(); 
+				} else {
+					alert('删除失败');
+				}
+			});
+		}
+		 
+	}
+	function addTr(tab, row, trHtml){
+		 //获取table最后一行 $("#tab tr:last")
+		 //获取table第一行 $("#tab tr").eq(0)
+		 //获取table倒数第二行 $("#tab tr").eq(-2)
+		 var $tr=$("#"+tab+" tr").eq(row);
+		 if($tr.size()==0){
+			 alert("指定的table id或行数不存在！");
+			 return;
+		 }
+		 $tr.after(trHtml);
+	}
+	function back(){
+		 parent.$("#rightPart").attr("src", "./html/barcode/fhdgl.html");
+		 parent.$(".dhxx").html("发货单管理 ");
+	}
+	function save(){
+
+		var order_ckdh = $("#order_ckdh").val();
+		var postdata = {};
+         postdata.order_ckdh=$("#order_ckdh").val();
+         postdata.order_tdh=$("#order_tdh").val();
+         postdata.order_fhrq=$("#order_fhrq").val();
+         postdata.order_khmc=$("#order_khmc").val();
+	     postdata.order_mdh=$("#order_mdh").val();
+	     postdata.order_gh=$("#order_gh").val();
+	     postdata.order_fh=$("#order_fh").val();
+	     postdata.order_zdr=$("#order_zdr").val();
+	     postdata.order_zdsj=$("#order_zdsj").val();
+		var url;
+		if(order_ckdh==''||order_ckdh==null){
+			toastr.error('发货单号不能为空！');
+			return;
+		}
+		url = "../../fhdwh/updateFhd";
+		// 提交后台保存数据转换为JSON 格式
+		var data = JSON.stringify(postdata);
+		//保存提交后台
+		if (url){
+			ajaxSubmit(url, data, function(data) {
+			if (parseInt(data['status']) > 0) {
+				 alert('信息保存成功!');
+				 parent.$("#rightPart").attr("src", "./html/barcode/fhdgl.html");
+				 parent.$(".dhxx").html("发货单管理 ");
+			} else {
+				alert('保存失败');
+			}
+		  });
+		}
+	}
+	function judgeRepeat(obj){
+		var ckdhh=$(obj).val();
+		$.ajax({
+	   	   	url:"../../fhdwh/judgeCkdhRepeat?ckdhh="+ckdhh,
+	   	   	type:"POST",
+	   	   	dataType:"xml",  
+	   	   	error: function(xml){  
+	   	       	alert('数据加载失败！');  
+	   	   	},
+	   		success: function(xml){ 
+	   			var barcodehtml="";
+	   	   		$(xml).find("item").each(function(i){ 
+	   	   			var jls=$(this).attr("jls");//客户编号
+	   	   			if(jls=="0"){
+	   	   				
+	   	   			}else{
+	   	   				alert("发货单号重复");
+	   	   				$(obj).val("").focus();
+	   	   			}
+	   	    	});
+	   	  	}
+	   	});
+	}
+	function checkDate(){
+		var fhrq=$("#order_fhrq").val();
+		var DATE_FORMAT = /^[0-9]{4}-[0-1]?[0-9]{1}-[0-3]?[0-9]{1}$/;
+		 if(DATE_FORMAT.test(fhrq)){
+		 }else{
+		   alert("抱歉，您输入的日期格式有误，正确格式应为2017-01-01");
+		   $("#order_fhrq").val("").focus();
+		 }
+	}
+</script>
+</html>

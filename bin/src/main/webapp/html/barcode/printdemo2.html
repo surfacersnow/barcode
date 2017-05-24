@@ -1,0 +1,220 @@
+<html>
+   <head>
+      <title>直接打印，选择打印机打印，打印预览</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>泰安和新精工科技有限公司发货单</title>
+     <script src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+      <script type="text/javascript" src="../../js/common.js" ></script>
+<style>
+#page1{ 
+	width: 100%;
+	border:1px solid green;
+	height: 950px;
+}
+.line-middle{
+	width: 100%;
+	/*border:1px solid black;*/
+	text-align: center;
+}
+.tab td{ 
+	/*border: 1px solid black;*/
+	text-align: center;
+}
+.tab2{
+	 border-collapse:collapse;
+}
+.tab2 td{ 
+	border: 1px solid black;
+	text-align: center;
+}
+.right{
+	/*border: 1px solid black;*/
+	height: 500px;
+	position: absolute;
+	right: 3%;
+	top: 30%;
+	width: 1%;
+	word-wrap:break-word;
+	font-size: 14px;
+}
+</style>
+   </head>
+   <body style='padding:10px;'>
+      <input type="button" value="打印预览" onClick="doPrint('打印预览')">
+      <input type="button" value="打印设置" onClick="doPrint('打印设置')">
+      <input type="button" value="直接打印" onClick="doPrint('直接打印')"><br><br>
+   <div id='page1'>
+   	<div class="right">第一联：送货单位 &nbsp;第二联：收货单位&nbsp; 第三联：财务 &nbsp;第四联：仓库 &nbsp;第五联：运输单位&nbsp; 第六联出门</div>
+        <div class="line-middle">
+            <h1>泰安和新精工科技有限公司成品库发货清单</h1>
+        </div>
+        <div >
+        	<table width="100%" class="tab">
+        		<tr>
+        			<td>客户：WPR</td>
+        			<td>发货日期：2016-12-22</td>
+        			<td>发货编号：2016122201</td>
+        		</tr>
+        	</table>
+        </div>
+        <div style="text-align: center;">
+        	<table width="90%" class="tab2" id="tab2" align="center">
+        		<tr>
+        			<td>序号</td>
+        			<td>客户编号</td>
+        			<td>款式</td>
+        			<td>生产编号</td>
+        			<td>尺寸</td>
+        			<td>ET</td>
+        			<td>PCD</td>
+        			<td>HUB</td>
+        			<td>状态</td>
+        			<td>数量</td>
+        			<td>单净重</td>
+        			<td>单毛重</td>
+        			<td>总净重</td>
+        			<td>总毛重</td>
+        			<td>备注</td>
+        		</tr>
+        		<tr>
+        			<td>1</td>
+        			<td></td>
+        			<td></td>
+        			<td>Y921178002S</td>
+        			<td>17*8</td>
+        			<td>15</td>
+        			<td>5*115</td>
+        			<td>72.6</td>
+        			<td>电镀</td>
+        			<td>1</td>
+        			<td>11.28</td>
+        			<td>14.02</td>
+        			<td>11.28</td>
+        			<td>14.02</td>
+        			<td rowspan="2">美国样轮</td>
+        		</tr>
+        		<tr>
+        			<td>2</td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        			<td></td>
+        		</tr>
+        	</table>
+        </div>
+
+   </div>
+      <!-- 插入打印控件 -->
+      <OBJECT  ID="jatoolsPrinter" CLASSID="CLSID:B43D3361-D075-4BE2-87FE-057188254255" 
+         codebase="jatoolsPrinter.cab#version=8,6,0,0"></OBJECT>  
+       <script> 
+         function doPrint(how) {
+            myDoc = {
+                documents: document,
+                copyrights: '杰创软件拥有版权  www.jatools.com'
+            };
+            if(how == '打印预览')
+                    document.getElementById("jatoolsPrinter").printPreview(myDoc);   // 打印预览
+            else if(how == '打印设置')
+                    document.getElementById("jatoolsPrinter").print(myDoc ,true);   // 打印前弹出打印设置对话框
+            else 
+                    document.getElementById("jatoolsPrinter").print(myDoc ,false);       // 不弹出对话框打印
+         };
+           function addTr(tab, row, trHtml){
+			 //获取table最后一行 $("#tab tr:last")
+			 //获取table第一行 $("#tab tr").eq(0)
+			 //获取table倒数第二行 $("#tab tr").eq(-2)
+			 var $tr=$("#"+tab+" tr").eq(row);
+			 if($tr.size()==0){
+				 alert("指定的table id或行数不存在！");
+				 return;
+			 }
+			 $tr.after(trHtml);
+		}
+         
+         function init(){
+         	for(var i=3;i<=30;i++){
+         		var trhtml="<tr>";
+        			trhtml=trhtml+"<td>"+i+"</td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"<td></td>";
+        			trhtml=trhtml+"</tr>";
+        		addTr("tab2", -1, trhtml);	
+         	}
+         	var trhtml2="";
+         	trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='9'>合计</td>";
+			trhtml2=trhtml2+"<td>1</td>";
+			trhtml2=trhtml2+"<td>11.28</td>";
+			trhtml2=trhtml2+"<td>14.02</td>";
+			trhtml2=trhtml2+"<td>11.28</td>";
+			trhtml2=trhtml2+"<td>14.02</td>";
+			trhtml2=trhtml2+"<td></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+			trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='4'>批准</td>";
+			trhtml2=trhtml2+"<td colspan='4'>审核</td>";
+			trhtml2=trhtml2+"<td colspan='6'>仓库</td>";
+			trhtml2=trhtml2+"<td></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+			trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='4' height='20px'></td>";
+			trhtml2=trhtml2+"<td colspan='4'></td>";
+			trhtml2=trhtml2+"<td colspan='6'></td>";
+			trhtml2=trhtml2+"<td></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+			trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='8' style='text-align:left'>物流司机信息：</td>";
+			trhtml2=trhtml2+"<td colspan='6'>收货单位签字（或盖章）</td>";
+			trhtml2=trhtml2+"<td></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+			trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='2' style='text-align:left'>司机姓名：</td>";
+			trhtml2=trhtml2+"<td colspan='2'></td>";
+			trhtml2=trhtml2+"<td colspan='1'>手机号：</td>";
+			trhtml2=trhtml2+"<td colspan='3'></td>";
+			trhtml2=trhtml2+"<td colspan='7' rowspan='2'></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+			trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='2' style='text-align:left'>车牌号:</td>";
+			trhtml2=trhtml2+"<td colspan='2'></td>";
+			trhtml2=trhtml2+"<td colspan='4'></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+			trhtml2=trhtml2+"<tr>";
+			trhtml2=trhtml2+"<td colspan='14' >备注：运输单位须携有收货单位签收并盖章的《送货清单》第五联回我公司结算运费</td>";
+			trhtml2=trhtml2+"<td></td>";
+			trhtml2=trhtml2+"</tr>";
+			
+         	addTr("tab2", -1, trhtml2);
+         }
+       init();
+      </script> 
+   </body>
+</html>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <bean id="system" class="com.ruisoft.core.dml.DMLConfig">
+          <property name="select">
+            <map>
+               <entry key="queryUser">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID, CODE,ACCOUNT, NAME, ORGID, PASSWD, STATUS, DESCRIPTION, deptName, email FROM cm_user]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="account" value="str:like(lr):and" />
+                                <entry key="name" value=":like(lr)" />
+                                <entry key="status" value="int" />
+                                <entry key="id" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="nonExist.queryuserrole">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME,STATUS,DESCRIPTION FROM CM_ROLE where id not in (select ROLE_ID from cm_user_role_rel t where t.USER_ID={userid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="exist.queryuserrole">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME,STATUS,DESCRIPTION FROM CM_ROLE where id  in (select ROLE_ID from cm_user_role_rel t where t.USER_ID={userid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="add">
+            <map>
+              <entry key="addUser">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+							    	INSERT INTO cm_user (ID, CODE,ACCOUNT, NAME, ORGID, PASSWD, STATUS, DESCRIPTION, deptName, email)
+							    	VALUES ({#pk_uuid}, {code}, {account},{name}, {orgid}, {passwd}, {status}, {description}, {deptname}, {email})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                  <entry key="addUserRole">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO cm_user_role_rel(USER_ID,ROLE_ID) VALUES({userid},{roleid})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="update">
+            <map>
+              <entry key="updateUser">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+							    	UPDATE cm_user SET CODE = {code},ACCOUNT={account},NAME = {name},ORGID = {orgid},PASSWD = {passwd},
+									STATUS = {status},DESCRIPTION = {description},deptName = {deptname},email = {email} WHERE ID = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="updateUserPerson">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+							    	UPDATE cm_user SET NAME = {name},DESCRIPTION = {description},deptName = {deptname},email = {email} WHERE ID = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                  <entry key="updatePasswdUser">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+							    	UPDATE cm_user SET PASSWD = {passwd}  WHERE ID = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="delete">
+            <map>
+              <entry key="delUser">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+							    	DELETE FROM cm_user WHERE ID = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="deleUserrole">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM cm_user_role_rel WHERE USER_ID={userid} and ROLE_ID={roleid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

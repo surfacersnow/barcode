@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>管理中心</title>
+<link rel="stylesheet" href="tmcssjsimg/css/pintuer.css">
+<link rel="stylesheet" href="tmcssjsimg/css/admin.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="lib/bootstrap-metisMenu/metisMenu.min.css" rel="stylesheet" />
+<script src="lib/jquery/jquery-1.9.1.min.js"></script>
+<script src="lib/bootstrap-metisMenu/metisMenu.min.js"></script>
+</head>
+<body style="background-color: #f2f9fd;">
+	<div class="header bg-main">
+		<div class="logo margin-big-left fadein-top">
+			<h1>管理中心</h1>
+		</div>
+		<div class="head-l">
+			<span style="color: #ffffff;" id="unameA"></span>
+			&nbsp;&nbsp;&nbsp;&nbsp;<a class="button button-little bg-red"
+				href="rbac/cmUser?method=logout"><span class="icon-power-off"></span> 退出登录</a>
+		</div>
+	</div>
+	<div class="leftnav">
+		<div class="leftnav-title"><strong><span class="icon-list"></span>菜单列表</strong></div>
+          <ul class="metismenu menucolor" id="menu">
+          </ul>
+	</div>
+
+	<ul class="bread">
+		<li><a href="javascript:void(0)" class="icon-home"> 首页</a></li>
+		<li class="dhxx"></li>
+		<!--  <li><a href=""  id="br3"></a></li>-->
+	</ul>
+	<div class="admin">
+		<iframe src="html/barcode/syzs.html" marginheight="0" marginwidth="0" frameborder="0"  
+		width="100%" height="99%" id="rightPart" name="rightPart" ></iframe>
+	</div>
+</body>
+<script type="text/javascript">
+$(function () {
+	
+// 	$("#rightPart").attr("src", "html/barcode/syzs.html");
+	
+	$(".icon-home").click(function(){
+	    $("#rightPart").attr("src", "html/barcode/syzs.html");
+	    $(".dhxx").html("");
+	});
+	getSourceMenuList();
+	setMenu(dataList);
+   $("#menu").metisMenu();
+// 	$("#tmwh").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/tmwh.html");
+// 	    $(".dhxx").html("条码维护");
+// 	});
+// 	$("#dsctmdy").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/dsctmdy.html");
+// 	    $(".dhxx").html("单生产条码打印");
+// 	});
+// 	$("#dfhtmdy").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/dfhtmdy.html");
+// 	    $(".dhxx").html("单发货条码打印");
+// 	});
+// 	$("#duosctmdy").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/duosctmdy.html");
+// 	    $(".dhxx").html("多生产条码打印");
+// 	});
+// 	$("#duofhtmdy").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/duofhtmdy.html");
+// 	    $(".dhxx").html("多发货条码打印");
+// 	});
+// 	$("#fhdgl").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/fhdgl.html");
+// 	    $(".dhxx").html("发货单管理");
+// 	});
+// 	$("#smfh").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/smfh.html");
+// 	    $(".dhxx").html("扫码发货");
+// 	});
+// 	$("#zhgl").click(function(){
+// 	    $("#rightPart").attr("src", "html/barcode/zhgl.html");
+// 	    $(".dhxx").html("账号管理");
+// 	});
+});
+$.ajax({
+	url : "rbac/cmUser?method=getUserInfo",
+	type : "GET",
+	dataType : "json",
+	contentType : "application/json; charset=utf-8",
+	success : function(data) {
+		if (data["status"] === "1")
+			$("#unameA").text("欢迎您,"+data["uname"]+" ");
+	},
+	error : function(data) {
+		alert("登录失效，请重新登录！");
+	}
+});
+var dataList = [];
+var addList = [];
+function getSourceMenuList() {
+	$.ajax({
+		url : "rbac/cmUser?method=menu",
+		type : "GET",
+		dataType : "json",
+		async : false,
+		contentType : "application/json; charset=utf-8",
+		success : function(data) {
+			dataList = data;//菜单数据源赋值
+		},
+		error : function(data) {
+			alert("菜单加载失败，请重新登录！");
+		}
+	});
+}
+
+function setMenu(list){
+	 var html = "";
+	for (var i = 0; i < list.length; i++) {
+		if(list[i].layer == '0'){
+			 var tempClickParam = "\'" + list[i].text + "\',\'" + list[i].url + "\',\'" + list[i].detail + "\',\'" + list[i].hint + "\'";
+			  html += '<li id="' + list[i].id + '">' +
+              '<a href="javascript:void(0)"  onclick="sideBarClick(' + tempClickParam + ')">' +
+              '<span class="' + list[i].icon_uri + '"></span>' + list[i].text;
+              if(list[i].detail=='0'){
+            	  html += '<span class="fa arrow"></span></a>'
+                      html += '<ul>';
+                      for (var j = 0; j < list.length; j++) {
+                         if(list[j].pid == list[i].id){
+                        	 tempClickParam = "\'" + list[j].text + "\',\'" + list[j].url + "\',\'" + list[j].detail + "\',\'" + list[j].hint + "\'";
+                             html += '<li id="' + list[j].id  + '">' +
+                                     '<a href="javascript:void(0)"  onclick="sideBarClick(' + tempClickParam + ')" >' +
+                                     '<span class="' + list[j].icon_uri+ '"></span>' + list[j].text + '</a>';
+                             html += "</li>";
+                         }
+                    }  
+                      html += '</ul>';
+              }else{
+            	   html += "</a>";
+              }
+			html += '</li>';
+		}
+	}
+	$("#menu").html(html);
+ 
+}
+
+function sideBarClick(text,url,detail,hint){
+	if(url&&detail=='1'){
+		if(hint=='1'){
+			 $("#rightPart").attr("src", "html/barcode/syzs.html");
+			 $(".dhxx").html('');
+			 window.open(url);
+		}else{
+			 $("#rightPart").attr("src", url);
+			    $(".dhxx").html(text);
+		}
+		
+	}
+}
+</script>
+</html>

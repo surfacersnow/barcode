@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width" />
+<title>Insert title here</title>
+    <link href="../../lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-table/bootstrap-table.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+    
+     <script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/bootstrap-table.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+	<script type="text/javascript">
+    var params = new Object();
+    var opt;
+    $(function () {
+    	initTable();
+    });
+    
+    function initTable()
+    {
+    	$('#usergrid').bootstrapTable({
+            url: '../../surfacer/query',         //请求后台的URL（*）
+            method: 'post',                      //请求方式（*）
+            toolbar: '#toolbar',                //工具按钮用哪个容器
+            striped: true,                      //是否显示行间隔色
+            cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: false,                     //是否启用排序
+            sortOrder: "asc",                   //排序方式
+            queryParams: queryParams,          //传递参数（*）
+            showHeader:true,
+            showColumns:false,
+            queryParamsType:'page',
+            sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+            pageNumber:1,                       //初始化加载第一页，默认第一页
+            pageSize: 5,                       //每页的记录行数（*）
+            pageList: [5, 10, 50, 100],        //可供选择的每页的行数（*）
+            search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+            strictSearch: false,
+            height:460,
+            showColumns: false,                  //是否显示所有的列
+            showRefresh: false,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            singleSelect: true,
+            uniqueId: "id",           //每一行的唯一标识，一般为主键列
+            showToggle:false,                    //是否显示详细视图和列表视图的切换按钮
+            cardView:  false,                    //是否显示详细视图
+            detailView: false,                   //是否显示父子表
+            columns: [{radio: true},
+                      {field: 'id',title: 'id',visible:false,halign:'center',valign:'middle'}, 
+                      {field: 'code',title: 'code',visible:false,halign:'center',valign:'middle'}, 
+                      {field: 'orgid',title: 'orgid',visible:false,halign:'center',valign:'middle'}, 
+                      {field: 'account', title: '账号',halign:'center',valign:'middle'},
+            	         {field: 'name', title: '用户名称',halign:'center',valign:'middle'},
+            	         {field: 'deptname', title: '单位名称',halign:'center',valign:'middle'},
+                      {field: 'email',title: '邮箱',halign:'center',valign:'middle'}, 
+                      {field: 'status', title: '状态',halign:'center',valign:'middle'},
+                      {field: 'description', title: '说明',halign:'center',valign:'middle'},
+                      {field: 'operate',title: '操作',align: 'center',valign: 'middle',
+           				 formatter: operateFormatter,
+             			 events: operateEvents},
+            ]
+        });
+    }
+    
+    function queryParams(params) {
+        var temp = {
+                ps: params.pageSize,   //页面大小
+                cp: params.pageNumber,  //页码
+                p: true,
+                data:params,
+                //sql:'system.select.queryUser2',
+                sql:'surfacer.select.queryUser.query'
+            };
+            return temp;
+        }
+function operateFormatter(value, row, index) {
+	 if(row.id==='000001'){
+		 return [''].join('');
+	 }
+    return ['<a class="edit btn btn-xs btn-default btn-primary" style="margin-left:10px" href="javascript:void(0)" title="编辑">',
+                            '<i class="icon-pencil">编辑</i>',
+             '</a>',
+              '<a class="remove btn btn-xs btn-default btn-primary" style="margin-left:10px" href="javascript:void(0)" title="移除">',
+                            '<i class="icon-remove">移除</i>',
+              '</a>'
+            ].join('');
+}
+
+window.operateEvents = {
+	     'click .edit': function (e, value, row, index) {
+	    	 $("#modaltitle").text("修改用户");
+	 		 opt='update';
+	 		 $("#adduser_modal").find(".form-control").val("");
+	 		  $("#id").val(row.id);
+	 	      $("#account").val(row.account);
+			  $("#name").val(row.name);
+			  $("#status").val(row.status);
+			  $("#description").val(row.description);
+			  $("#email").val(row.email);
+			  $("#deptname").val(row.deptname);
+	 		$('#adduser_modal').modal('show');
+	     },
+	     'click .remove': function (e, value, row, index) {
+	    		Ewin.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+	   				if (!e) {
+	   				 return;
+	   				}
+	   			   var data = JSON.stringify(reqJson('system.delete.delUser',row));
+	   		       ajaxSubmit("../../system/del", data, function(data) {
+	   		        if (data) {
+	   		            if (parseInt(data['status']) > 0) {
+	   		               toastr.success('删除成功!');
+			                toQuery();
+	   		            } else {
+	   		            	toastr.error('删除失败');
+	   		            }
+	   		        }
+	   		       });
+	   			});
+	     }
+	 }
+
+
+
+
+
+
+
+    
+    
+    //}
+    </script>
+</head>
+<body>
+
+<table id="usergrid"></table>
+
+</body>
+</html>

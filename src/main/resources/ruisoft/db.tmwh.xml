@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <bean id="tmwh" class="com.ruisoft.core.dml.DMLConfig">
+        <property name="select">
+            <map>
+                <entry key="barcode.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                    <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT BARCODE_SC, BARCODE_KHMC,BARCODE_KHBH, BARCODE_UPC, BARCODE_KS, BARCODE_GG, BARCODE_PCD, BARCODE_ZXK, BARCODE_PJ, FORMAT(BARCODE_DJZ,3) BARCODE_DJZ, FORMAT(BARCODE_MJZ,3) BARCODE_MJZ, FORMAT(BARCODE_DJT,4) BARCODE_DJT, BARCODE_BMZT, BARCODE_BMZTYW, BARCODE_BZFS,BARCODE_BQBH FROM crm_barcode ]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="barcode_khbh" value="str:like(lr)" />
+                                <entry key="barcode_sc" value="str:like(lr)" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="barcode.barcode_bh">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT BARCODE_SC,  BARCODE_KHMC,BARCODE_KHBH, BARCODE_UPC, BARCODE_KS, BARCODE_GG, BARCODE_PCD, BARCODE_ZXK, BARCODE_PJ,FORMAT(BARCODE_DJZ,3) BARCODE_DJZ, FORMAT(BARCODE_MJZ,3) BARCODE_MJZ, FORMAT(BARCODE_DJT,4) BARCODE_DJT, BARCODE_BMZT, BARCODE_BMZTYW, BARCODE_BZFS,BARCODE_BQBH FROM crm_barcode where BARCODE_KHBH = {barcode_khbh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                    <entry key="barcode.barcode_sc">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT BARCODE_SC,  BARCODE_KHMC,BARCODE_KHBH, BARCODE_UPC, BARCODE_KS, BARCODE_GG, BARCODE_PCD, BARCODE_ZXK, BARCODE_PJ, FORMAT(BARCODE_DJZ,3) BARCODE_DJZ, FORMAT(BARCODE_MJZ,3) BARCODE_MJZ, FORMAT(BARCODE_DJT,4) BARCODE_DJT, BARCODE_BMZT, BARCODE_BMZTYW, BARCODE_BZFS,BARCODE_BQBH FROM crm_barcode where BARCODE_SC = {barcode_sc}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                
+            </map>
+        </property>
+        <property name="add">
+        	<map>
+                <entry key="barcode.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                INSERT INTO crm_barcode (BARCODE_SC, BARCODE_KHMC, BARCODE_KHBH, BARCODE_UPC, BARCODE_KS, BARCODE_GG, BARCODE_PCD, BARCODE_ZXK, BARCODE_PJ, BARCODE_DJZ, BARCODE_MJZ, BARCODE_DJT, BARCODE_BMZT, BARCODE_BMZTYW, BARCODE_BZFS,BARCODE_BQBH)
+                                VALUES ({barcode_sc}, {barcode_khmc}, {barcode_khbh}, {barcode_upc}, {barcode_ks}, {barcode_gg}, {barcode_pcd}, {barcode_zxk}, {barcode_pj}, {barcode_djz}, {barcode_mjz}, {barcode_djt}, {barcode_bmzt}, {barcode_bmztyw}, {barcode_bzfs}, {barcode_bqbh})
+								]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="update">
+            <map>
+                <entry key="barcode.update">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE crm_barcode SET BARCODE_SC = {barcode_sc},BARCODE_KHMC = {barcode_khmc},BARCODE_UPC = {barcode_upc},BARCODE_KS = {barcode_ks},BARCODE_GG = {barcode_gg},BARCODE_PCD = {barcode_pcd},BARCODE_ZXK = {barcode_zxk},BARCODE_PJ = {barcode_pj},BARCODE_DJZ = {barcode_djz},BARCODE_MJZ = {barcode_mjz},
+                                         BARCODE_DJT = {barcode_djt},BARCODE_BMZT = {barcode_bmzt},BARCODE_BMZTYW = {barcode_bmztyw},BARCODE_BZFS = {barcode_bzfs},BARCODE_BQBH={barcode_bqbh} where BARCODE_KHBH = {barcode_khbh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="delete">
+            <map>
+                <entry key="barcode.delete">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM crm_barcode WHERE BARCODE_KHBH = {barcode_khbh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

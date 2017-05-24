@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>个人信息维护</title>
+<link rel="stylesheet" type="text/css" href="../../css/cm-default.css" />
+<link rel="stylesheet" type="text/css" href="../../css/main.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/Aqua/css/ligerui-all.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/ligerui-icons.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/bootstrap/css/bootstrap.css"/>
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="../../lib/ligerUI/js/ligerui.all.js" ></script>
+<script type="text/javascript" src="../../js/common.js" ></script>
+<script type="text/javascript" src="../../lib/autoInput/AutoInput.js" ></script>
+<script type="text/javascript" src="../../js/pub.js"></script>
+<script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js" ></script>
+<script type="text/javascript" src="../../lib/md5.js"></script>
+<script type="text/javascript">
+var defGrid;
+var userid;
+var parm = new Object();
+var uid;
+$(function(){
+    ajaxSubmit("../../rbac/cmUser?method=getUserInfo", null, function(data) {
+        $('#createUserCodeS').val(data['userid']);
+        uid = data['userid'];
+    }, null, false);
+    parm.id = uid;
+    defGrid = $("#query_list").ligerGrid({
+        columns:[
+            {display:'操作',isSort:false,width:60,render:function(rowdata,rowindex,value) {
+                var h = "";
+                if (!rowdata._editing) {
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='beginEdit(" + rowindex + ")'>修改</a> ";
+                } else {
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='endEdit(" + rowindex + ")'>提交</a> ";
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='cancelEdit(" + rowindex + ")'>取消</a> ";
+                }
+                return h;
+            },frozen:true},
+            {display:'账号',name:'account',width:80,minWidth:60,align:'left'},
+            {display:'用户名',name:'name',width:100,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'密码修改',isSort:false,width:100,render:function(rowdata,rowindex,value){
+                return "<a href='javascript:void(0);' class='opt-link' onclick='open_Modfiy_PW(" + rowindex + ")'>密码修改</a>";
+            }},
+            {display:'说明',name:'description',width:200,align:'left',editor:{type:'text'}}
+        ],
+        pageSize:10,
+        usePager: true,
+        sortName:'id',
+        width:'100%',
+        height:'100%',
+        postData:parm,
+        dataAction:'server',
+        checkbox:false,
+        rownumbers:false,
+        fixedCellHeight:false,
+        colDraggable:true,
+        enabledEdit:true,
+        clickToEdit:false,
+        onSelectRow:function(rowdata, rowindex){$("#txtrowindex").val(rowindex);},
+        sqlid:"rbac.select.def.queryUser",
+        url: '../../comm/q',
+        contentType : "application/json; charset=utf-8",
+        param_status:'rbac.status',
+        param_org:'org_list'
+    });
+    $("#pageloading").hide();
+
+    $("#org_combobox").ligerComboBox({
+        autocomplete: true,
+        valueField:'value',
+        textField:'name',
+        data:get_org_list,
+        onSelected:function(v,t) {
+            $("#orgid").val(v);
+        }
+    });
+});
+function beginEdit(rowid) {
+    defGrid.beginEdit(rowid);
+}
+function cancelEdit(rowid) {
+    defGrid.cancelEdit(rowid);
+}
+function endEdit(rowid) {
+    defGrid.endEdit(rowid);
+    var row = defGrid.getRow(rowid);
+    toModify(JSON.stringify(row));
+}
+function switcher(item) {
+    return paramRender(item, defGrid.options.param_status, item.status);
+}
+var getStatus = new function () {
+    return getData('rbac.status');
+}
+function switcher_org(item) {
+    return paramRender(item, defGrid.options.param_org, item.orgid);
+}
+var get_org_list=new function () {
+    return getData('org_list');
+}
+function toQuery(item, page, pageSize) {
+    var param = new Object();
+    param.id=$("#createUserCodeS").val()
+    // l-list 线性结构，默认；t-tree 树型结构
+    param.rt='l';
+    //重置页码
+    defGrid.set({
+        page : 1,
+        newPage : 1,
+        postData : param
+    });
+    // grid 重新加载数据
+    defGrid.loadData();
+}
+//密码修改窗口
+function open_Modfiy_PW(rowid) {
+    userid = defGrid.getRow(rowid)['id'];;
+    if (userid) {
+        toReset('#up_dict_pw input,select,textarea');
+        addDialog = $.ligerDialog.open({
+            target:$("#up_dict_pw"),
+            title:"密码修改",
+            width:350,
+            height:250
+        });
+    }
+}
+//修改密码时，两次密码一致性校验。不一致时，弹出窗口
+function toupdatepw()
+{
+    var pwd1=$("#password1").val();
+    var pwd2=$("#password2").val();
+    if(pwd1!=pwd2)
+    {
+        $.ligerDialog.success('两次密码不一致请重新输入！');
+        return;
+    }
+    var parampw = new Object();
+    parampw.id=userid;
+    parampw.pwd =hex_md5(pwd1).toUpperCase() ;
+    var param = JSON.stringify(reqJson('rbac.update.def.updateuserpd',JSON.stringify(parampw)));
+
+    ajaxSubmit("../../comm/u", param, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('保存成功');
+                addDialog.hide();
+            } else {
+                $.ligerDialog.error('保存失败');
+            }
+        }
+    });}
+
+function toModify(row) {
+    var param = JSON.stringify(reqJson('rbac.update.def.updateuser',row));
+    ajaxSubmit("../../comm/u", param, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('保存成功');
+            } else {
+                $.ligerDialog.error('保存失败');
+            }
+        }
+    });
+}
+</script>
+<style type="text/css">
+    label{margin: 5px 20px 5px 15px;}
+    .fields{height:35px;padding-top:5px;}
+    .dict-info{width: 260px;padding: 10px;}
+    .diff {margin:3px 0;}
+    .lineD {width:99%;float:left;position:relative;overflow:hidden;margin:10px 0 2px 2px}
+    .labelD {width:30%;position:relative;float:left;padding-top:3px;}
+    .dplD {width:69%;position:relative;float:left;}
+    .title{font-size:14px;font-weight:bold;background-position:left;padding-left:18px;}
+</style>
+</head>
+<body style="padding:0;">
+<input type="hidden" id="createUserCodeS" />
+<div id="pageloading"></div>
+<div id="layout_main">
+    <div position="center" id="a_center" title="用户列表">
+
+        <div id="query_list"></div>
+    </div>
+</div>
+<div id="up_dict_pw" style="display:none;overflow:hidden;">
+
+    <div class="lineD">
+        <div class="labelD"><label>新密码</label></div>
+        <div class="dplD"><input type="password" class="s-text txt-def" id="password1" /></div>
+    </div>
+    <div class="lineD">
+        <div class="labelD"><label>确认密码</label></div>
+        <div class="dplD"><input type="password" class="s-text txt-def" id="password2" /></div>
+    </div>
+    <div class="lineD" style="margin-top:15px;padding-left:30%;">
+        <button type="button" onclick="toupdatepw();" class="form_Button btn btn-primary btn-xs">保存</button>
+    	<button type="button" onclick="toReset('#up_dict_pw input,select,textarea')" class="form_Button btn btn-primary btn-xs">清空</button>
+    </div>
+</div>
+</body>
+</html>

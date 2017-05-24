@@ -1,0 +1,225 @@
+<html>
+    <head>
+        <title>直接打印，选择打印机打印，打印预览</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>泰安和新精工科技有限公司发货单</title>
+        <script src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+          <script type="text/javascript" src="../../js/common.js" ></script>
+        <style>
+            #page1 {
+                width: 100%;
+            }
+            #page2 {
+                width: 100%;
+            }
+            .line-middle {
+                width: 100%;
+                /*border:1px solid black;*/
+                text-align: center;
+            }
+            .tab td {
+                /*border: 1px solid black;*/
+                text-align: center;
+            }
+            .tab2 {
+                border-collapse: collapse;
+            }
+            .tab2 td {
+                border: 1px solid black;
+                text-align: center;
+            }
+            .right{
+				/*border: 1px solid black;*/
+				height: 500px;
+				position: absolute;
+				right: 3%;
+				top: 30%;
+				width: 1%;
+				word-wrap:break-word;
+			}
+        </style>
+    </head>
+
+    <body style='padding:10px;'>
+        <input type="button" value="打印预览" onClick="doPrint('打印预览')">
+        <input type="button" value="打印设置" onClick="doPrint('打印设置')">
+        <input type="button" value="直接打印" onClick="doPrint('直接打印')">
+        <br><br>
+        <div id="printArea"></div>
+        <!-- 插入打印控件 -->
+        <OBJECT ID="jatoolsPrinter" CLASSID="CLSID:B43D3361-D075-4BE2-87FE-057188254255" codebase="jatoolsPrinter.cab#version=8,6,0,0"></OBJECT>
+        <script>
+       var order_khmc='';
+       var order_mdh='';
+       var order_gh='';
+       var order_fh ='';
+       var order_ckdh = '';
+      $(function() {
+       	 var query = getQueryString(window.location.toString());
+       	 order_ckdh = query.ckdh;
+       	  ajaxSubmitGet("../../tmwh/queryCkdPrint/" +order_ckdh , function(data) {
+       		  bindVal(data);
+       		  ajaxSubmitGet("../../tmwh/queryDetailPrint/" + order_ckdh, function(list) {
+     	 		  getPrintDataHtml(list);
+     	 	  });
+	 	   });
+ 	 	
+       });
+  	 function bindVal(data) {
+		    var ckddata = data['data'];
+		    order_khmc=ckddata.order_khmc;
+		    order_mdh=ckddata.order_mdh;
+		    order_gh=ckddata.order_gh;
+		    order_fh =ckddata.order_fh;
+   }
+            function doPrint(how) {
+                myDoc = {
+                    settings: {
+                    	copies:1,      //打印份数
+                        copyway:'112233',    //打印顺序 默认为123123
+                    	paperName:'a4',
+                        orientation: 2
+                    }, // 选择横向打印,1为纵向，2为横向
+                    documents: document,
+                    copyrights: '杰创软件拥有版权  www.jatools.com'
+                };
+                if(how == '打印预览')
+                    document.getElementById("jatoolsPrinter").printPreview(myDoc); // 打印预览
+                else if(how == '打印设置')
+                    document.getElementById("jatoolsPrinter").print(myDoc, true); // 打印前弹出打印设置对话框
+                else
+                    document.getElementById("jatoolsPrinter").print(myDoc, false); // 不弹出对话框打印
+            }
+            function getPrintDataHtml(list) {
+              var html = "";
+              var leng = list.length;
+              if(leng == 0){
+            	  html = html + "<div id='page1'>";
+            	  html = html + " <div class=\"right\">&nbsp;一联:仓库 &nbsp;&nbsp;二联:财务 &nbsp;&nbsp; 三联:出门</div>";
+            	  html = html + "<div class=\"line-middle\">";
+            	  html = html + "<h1>泰安和新精工科技有限公司成品库发货清单</h1>";
+            	  html = html + "</div>";
+            	  html = html + "<div style=\"text-align: right;padding-right: 6%;\">";
+            	  html = html + "<p>发货编号："+order_ckdh+"</p>";
+            	  html = html + "</div>";
+            	  html = html + "<div>";
+            	  html = html + "<table width=\"100%\" class=\"tab\">";
+            	  html = html + "<tr>";
+            	  html = html + "<td>客户："+order_khmc+"</td>";
+            	  html = html + "<td>目的港："+order_mdh+"</td>";
+            	  html = html + "<td>柜号："+order_gh+"</td>";
+            	  html = html + "<td>封号："+order_fh+"</td>";
+            	  html = html + "</tr>";
+            	  html = html + "</table>";
+            	  html = html + "</div>";
+            	  html = html + "</div>";
+            	  $("#printArea").html(html);
+              }else{
+            	  var mod = Math.ceil(leng/20);
+            	  for(var j =1;j<=mod;j++){
+            		  html = html + "<div id='page"+j+"'>";
+            		  html = html + " <div class=\"right\">&nbsp;一联:仓库 &nbsp;&nbsp;二联:财务 &nbsp;&nbsp; 三联:出门</div>";
+                	  html = html + "<div class=\"line-middle\">";
+                	  html = html + "<h1>泰安和新精工科技有限公司成品库发货清单</h1>";
+                	  html = html + "</div>";
+                	  html = html + "<div style=\"text-align: right\;padding-right: 6%\;\">";
+                	  html = html + "<p>发货编号："+order_ckdh+"</p>";
+                	  html = html + "</div>";
+                	  html = html + "<div>";
+                	  html = html + "<table width=\"100%\" class=\"tab\">";
+                	  html = html + "<tr>";
+                	  html = html + "<td>客户："+order_khmc+"</td>";
+                	  html = html + "<td>目的港："+order_mdh+"</td>";
+                	  html = html + "<td>柜号："+order_gh+"</td>";
+                	  html = html + "<td>封号："+order_fh+"</td>";
+                	  html = html + "</tr>";
+                	  html = html + "</table>";
+                	  html = html + "</div>";
+                	  html = html + "<div style=\"text-align: center\;\">";
+                	  html = html + "<table width=\"90%\" class=\"tab2\" align=\"center\" id=\"printtab"+j+"\">";
+                	  html = html + "<tr>";
+                	  html = html + "<td>序号</td>";
+                	  html = html + "<td>客户</td>";
+                	  html = html + "<td>客户编号</td>";
+                	  html = html + "<td>生产编号</td>";
+                	  html = html + "<td>规格</td>";
+                	  html = html + "<td>数量</td>";
+                	  html = html + "<td>状态</td>";
+                	  html = html + "<td>单净重</td>";
+                	  html = html + "<td>总净重</td>";
+                	  html = html + "<td>总毛重</td>";
+                	  html = html + "<td>单位</td>";
+                	  html = html + "<td>单体积</td>";
+                	  html = html + "<td>总体积</td>";
+                	  html = html + "<td>包装方式</td>";
+                	  html = html + "</tr>";
+            		  var start = (j-1)*20;
+            		  var step = j*20;
+            		  var zsl = 0;
+            		  var zjz = 0;
+            		  var zmz = 0;
+            		  var ztj = 0;
+            		  for(var i=start;i<step&&i<leng;i++){
+            			  var num = i + 1;
+            			  html = html + "<tr>";
+                          html = html + "   <td>" + num + "</td>";
+                          html = html + "   <td>"+list[i].detailsum_khbh+"</td>";
+                          html = html + "   <td>"+list[i].barcode_sc+"</td>";
+                          html = html + "   <td>"+list[i].barcode_gg+"</td>";
+                          html = html + "   <td>"+list[i].detailsum_sl+"</td>";
+                          html = html + "   <td>"+list[i].barcode_bmzt+"</td>";
+                          html = html + "   <td>"+Number(list[i].barcode_djz).toFixed(2)+"</td>";
+                          html = html + "   <td>"+Number(list[i].barcode_mjz).toFixed(2)+"</td>";
+                          html = html + "   <td>"+Number(list[i].detailsum_zjz).toFixed(2)+"</td>";
+                          html = html + "   <td>"+Number(list[i].detailsum_zmz).toFixed(2)+"</td>";
+                          html = html + "   <td>kgs</td>";
+                          html = html + "   <td>"+Number(list[i].barcode_djt).toFixed(3)+"</td>";
+                          html = html + "   <td>"+Number(list[i].detailsum_ztj).toFixed(3)+"</td>";
+                          html = html + "   <td>"+list[i].barcode_bzfs+"</td>";
+                          html = html + " </tr>";
+                          zsl = accAdd(zsl,Number(list[i].detailsum_sl));
+                          zjz = accAdd(zjz, Number(list[i].detailsum_zjz));
+                          zmz = accAdd(zmz, Number(list[i].detailsum_zmz));
+                          ztj = accAdd(ztj,Number(list[i].detailsum_ztj));
+            		  }
+            		  html = html + "<tr>";
+                      html = html + "<td colspan=\"4\">合计</td>";
+                      html = html + "<td>"+zsl+"</td>";
+                      html = html + "<td></td>";
+                      html = html + "<td></td>";
+                      html = html + "<td></td>";
+                      html = html + "<td>"+zjz.toFixed(2)+"</td>";
+                      html = html + "<td>"+zmz.toFixed(2)+"</td>";
+                      html = html + "<td></td>";
+                      html = html + "<td></td>";
+                      html = html + "<td>"+ztj.toFixed(3)+"</td>";
+                      html = html + "<td></td>";
+                      html = html + "</tr>";
+            		  html = html + "</table>";
+                	  html = html + "</div>";
+            		  html = html + "<div>";
+            		  html = html + " <table width=\"100%\" class=\"tab\">";
+            		  html = html + " <tr>";
+            		  html = html + "   <td>批准：</td>";
+            		  html = html + "   <td>审核：</td>";
+            		  html = html + "   <td>仓库：</td>";
+            		  html = html + "</tr>";
+            		  html = html + " </table>";
+            		  html = html + " </div>";
+            		  html = html + " </div>";
+            	  }
+            	  $("#printArea").html(html);
+              }
+           }
+            
+            function accAdd(arg1,arg2){
+            	  var r1,r2,m;
+            	  try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+            	  try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+            	  m=Math.pow(10,Math.max(r1,r2))
+            	  return (arg1*m+arg2*m)/m
+            	}
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <bean id="key" class="com.ruisoft.core.dml.DMLConfig">
+        <property name="select">
+            <map>
+                <entry key="key.generator.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT KEY_ID,MAX_VAL,CIRCLE,ORG_ID,DESCRIPTION FROM CM_KEY_GENERATOR WHERE KEY_ID={keyid} AND ORG_ID={orgid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="add">
+            <map>
+                <entry key="key.generator.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_KEY_GENERATOR(KEY_ID,MAX_VAL,CIRCLE,ORG_ID,DESCRIPTION) VALUES({keyid},{max_val:int},{circle},{orgid},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="update">
+            <map>
+                <entry key="key.generator.reset">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_KEY_GENERATOR SET MAX_VAL={max_val:int},CIRCLE={new_circle} WHERE KEY_ID={keyid} AND ORG_ID={orgid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="key.generator.update_max">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_KEY_GENERATOR SET MAX_VAL=MAX_VAL+{incr:int} WHERE KEY_ID={keyid} AND ORG_ID={orgid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

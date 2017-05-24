@@ -1,0 +1,38 @@
+.l-link{text-decoration:none !important;
+    color:white;
+    margin-left:2px;
+    margin-right:2px;}
+.l-link:hover{color:#FF8040;}
+.space{ color:#E7E7E7;}
+.l-topmenu{
+    margin:0;
+    padding:0;
+    height:31px;
+    line-height:31px;
+    background:url('../images/top.jpg') repeat-x bottom;
+    position:relative;
+    border-top:1px solid #1D438B;  }
+.l-topmenu-logo{
+    color:#E7E7E7;
+    padding-left:35px;
+    line-height:26px;}
+.l-topmenu-welcome{
+    position:absolute;
+    height:24px;
+    line-height:24px;
+    right:30px;
+    top:2px;
+    color:#070A0C;}
+.l-topmenu-welcome a{
+    color:#E7E7E7;
+    text-decoration:underline}
+/*dict.html*/
+label{margin: 5px 20px 5px 15px;}
+.fields{height:65px;padding-top:5px;background-color:#F0EEED}
+.dict-info{width: 260px;padding: 10px;}
+.diff {margin:3px 0;}
+.lineD {width:99%;float:left;position:relative;overflow:hidden;margin:10px 0 2px 2px}
+.labelD {width:26%;position:relative;float:left;padding-top:3px;}
+.dplD {width:73%;position:relative;float:left;}
+.title{font-size:14px;font-weight:bold;background-position:left;padding-left:18px;}
+.l-dialog-content-nopadding{padding:0 !important;}

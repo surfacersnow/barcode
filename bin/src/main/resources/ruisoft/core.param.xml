@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <bean id="paramGenerator" class="com.ruisoft.core.param.ParamGenerator" lazy-init="false">
+        <property name="config">
+            <map>
+                <entry key="Attrib_help">
+                    <bean class="com.ruisoft.core.param.SQLParamEntity">
+                        <property name="sql">
+                            <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                                <property name="dmlType" value="cond" />
+                                <property name="sql">
+                                    <value><![CDATA[SELECT code,value,name FROM cm_dict_line]]></value>
+                                </property>
+                                <property name="conditions">
+                                    <map>
+                                        <entry key="dict_id" value="" />
+                                    </map>
+                                </property>
+                            </bean>
+                        </property>
+                    </bean>
+                </entry>
+                <!-- 查询系统用户,可按机构代码查询 -->
+                <entry key="user">
+                    <bean class="com.ruisoft.core.param.SQLParamEntity">
+                        <property name="sql">
+                            <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                                <property name="dmlType" value="cond" />
+                                <property name="sql">
+                                    <value><![CDATA[SELECT NAME,ID VALUE,ID SEQ,STATUS FROM CM_USER]]></value>
+                                </property>
+                                <property name="conditions">
+                                    <map>
+                                        <entry key="orgid" value="" />
+                                    </map>
+                                </property>
+                            </bean>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="org_list">
+                    <bean class="com.ruisoft.core.param.SQLParamEntity">
+                        <property name="sql">
+                            <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                                <property name="dmlType" value="cond" />
+                                <property name="sql">
+                                    <value><![CDATA[SELECT NAME,ID VALUE,ID SEQ,STATUS FROM CM_ORG]]></value>
+                                </property>
+                                <property name="conditions">
+                                    <map>
+                                        <entry key="org_type" value="" />
+                                    </map>
+                                </property>
+                            </bean>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="PRODUCT_ATTRIBUTE">
+                    <bean class="com.ruisoft.core.param.SQLParamEntity">
+                        <property name="sql">
+                            <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                                <property name="sql">
+                                    <value><![CDATA[SELECT id VALUE,code,name,value att_value FROM cm_dict_line where dict_id = '20151027231931-c58cf872edf145c2']]></value>
+                                </property>
+                            </bean>
+                        </property>
+                        <property name="cache" value="true" />
+                    </bean>
+                </entry>
+                    <entry key="machine_list">
+                    <bean class="com.ruisoft.core.param.SQLParamEntity">
+                        <property name="sql">
+                            <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                                <property name="dmlType" value="cond" />
+                                <property name="sql">
+                                    <value><![CDATA[SELECT machName NAME ,CONCAT(machCode,'#',machIP,'#',machSN) VALUE FROM machineinfo]]></value>
+                                </property>
+                                <property name="conditions">
+                                    <map>
+                                        <entry key="dept_id" value="" />
+                                        <entry key="machuse" value="" />
+                                        <entry key="machable" value="1" />
+                                    </map>
+                                </property>
+                            </bean>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="BARCODE_BASE">
+                    <bean class="com.ruisoft.core.param.SQLParamEntity">
+                        <property name="sql">
+                            <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                                <property name="sql">
+                                    <value><![CDATA[select barcode_khmc,barcode_sc,barcode_khbh value,barcode_upc,barcode_ks,barcode_gg,barcode_pcd,barcode_zxk,barcode_pj,barcode_djz,barcode_mjz,barcode_djt,barcode_bmzt,barcode_bmztyw,barcode_bzfs
+ from crm_barcode]]></value>
+                                </property>
+                            </bean>
+                        </property>
+                        <property name="cache" value="true" />
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>资源维护</title>
+<link rel="stylesheet" type="text/css" href="../../css/cm-default.css" />
+<link rel="stylesheet" type="text/css" href="../../css/main.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/Aqua/css/ligerui-all.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/ligerui-icons.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/bootstrap/css/bootstrap.css"/>
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="../../lib/ligerUI/js/ligerui.all.js" ></script>
+<script type="text/javascript" src="../../js/common.js" ></script>
+<script type="text/javascript" src="../../lib/autoInput/AutoInput.js" ></script>
+<script type="text/javascript" src="../../js/pub.js"></script>
+<script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js" ></script>
+<script type="text/javascript" src="../../lib/md5.js"></script>
+<script type="text/javascript">
+var defGrid;
+var userid;
+$(function(){
+    defGrid = $("#query_list").ligerGrid({
+        columns:[
+            {display:'操作',isSort:false,width:60,render:function(rowdata,rowindex,value) {
+                var h = "";
+                if (!rowdata._editing) {
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='beginEdit(" + rowindex + ")'>修改</a> ";
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='deleteRow(" + rowindex + ")'>删除</a> ";
+                } else {
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='endEdit(" + rowindex + ")'>提交</a> ";
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='cancelEdit(" + rowindex + ")'>取消</a> ";
+                }
+                return h;
+            }},
+            {display:'资源ID',name:'id',width:80,minWidth:60,align:'left'},
+            {display:'名称',name:'name',width:100,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'位置',name:'uri',width:200,minWidth:150,align:'left',editor:{type:'text'}},
+            {display:'状态',name:'status',width:70,data:status,render:switcher,editor:{type:'select',data:getStatus,textField:'name',valueField:'value',selectBoxHeight:50}},
+        ],
+        pageSize:10,
+        usePager: true,
+        sortName:'id',
+        width:'100%',
+        height:'100%',
+        dataAction:'server',
+        checkbox:false,
+        rownumbers:false,
+        fixedCellHeight:false,
+        colDraggable:true,
+        enabledEdit:true,
+        clickToEdit:false,
+        onSelectRow:function(rowdata, rowindex){$("#txtrowindex").val(rowindex);},
+        sqlid:"rbac.select.def.queryResource",
+        url: '../../comm/q',
+        contentType : "application/json; charset=utf-8",
+        param_status:'rbac.status',
+        param_type:'rbac.org_type'
+    });
+    $("#pageloading").hide();
+
+    $("#orgType_combobox").ligerComboBox({
+        autocomplete: true,
+        valueField:'value',
+        textField:'name',
+        data:getType,
+        onSelected:function(v,t) {
+            $("#newType").val(v);
+        }
+    });
+});
+function beginEdit(rowid) {
+    defGrid.beginEdit(rowid);
+}
+function cancelEdit(rowid) {
+    defGrid.cancelEdit(rowid);
+}
+function endEdit(rowid) {
+    defGrid.endEdit(rowid);
+    var row = defGrid.getRow(rowid);
+    toModify(JSON.stringify(row));
+}
+function deleteRow(rowid) {
+    $.ligerDialog.confirm('您确定要删除该项数据吗？', function(r) {
+        if (!r)
+            return;
+        var row = defGrid.getRow(rowid);
+        if (row['__status'] !== 'add')
+            toDel(JSON.stringify(row));
+        defGrid.deleteRow(rowid);
+    })
+}
+function switcher(item) {
+    return paramRender(item, defGrid.options.param_status, item.status);
+}
+var getStatus = new function () {
+    return getData('rbac.status');
+}
+function switcher_type(item) {
+    return paramRender(item, defGrid.options.param_type, item.type);
+}
+var getType = new function () {
+    return getData('rbac.org_type');
+}
+function toQuery(item, page, pageSize) {
+    var param = new Object();
+    param.name = $("#dictName").val();
+    // l-list 线性结构，默认；t-tree 树型结构
+    param.rt='l';
+    //重置页码
+    defGrid.set({
+        page : 1,
+        newPage : 1,
+        postData : param
+    });
+    // grid 重新加载数据
+    defGrid.loadData();
+}
+
+var addDialog;
+function openDictDef() {
+    toReset('#new_dict_def input,select,textarea');
+    addDialog = $.ligerDialog.open({
+        target:$("#new_dict_def"),
+        title:"新增资源",
+        width:350,
+        height:450
+    });
+}
+function validate() {
+    var valid = true;
+
+    $('*[id$="S"],*[id$="S_txt"]').each(function(index, element) {
+
+        if (!$(this).rules()) return;
+        if (!$(element).valid()) {
+            valid = false;
+            return;
+        }
+    });
+    if (!valid) return false;
+
+    return true
+}
+function toAdd() {
+    var param = new Object();
+    param.id=$("#resourceidS").val();
+    param.name = $("#newNameS").val();
+    param.uri = $("#newUriS").val();
+    param.type=$("#newType").val();
+    param.status = $("#newStatus").val();
+    param.desc=$("#newDesc").val();
+    var data = JSON.stringify(reqJson("rbac.add.def.addResource",JSON.stringify(param)));
+    ajaxSubmit("../../comm/a", data, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('保存成功', '操作完成', function() {
+                    addDialog.hide();
+                    toQuery();
+                });
+            }  else {
+                $.ligerDialog.error('保存失败');
+            }
+        }
+    });
+}
+function toModify(row) {
+    var data = JSON.stringify(reqJson("rbac.update.def.updateresource",row));
+    ajaxSubmit("../../comm/u", data, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('保存成功');
+            } else {
+                $.ligerDialog.error('保存失败');
+            }
+        }
+    });
+}
+function toDel(row) {
+    var param = JSON.stringify(reqJson('rbac.delete.def.deleResource',row));
+    ajaxSubmit("../../comm/d", param, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('删除成功');
+            } else {
+                $.ligerDialog.error('删除失败');
+            }
+        }
+    });
+}
+</script>
+</head>
+<body style="padding:0;">
+<div id="pageloading"></div>
+<div id="layout_main">
+    <div position="center" id="a_center" title="资源列表">
+        <div id="query_cond" class="fields">
+        	<div style="padding-left:15px;padding-top:5px;">
+ 			<button type="button" onclick="openDictDef();" class="btn btn-primary btn-xs ">
+   				&nbsp;<span class="glyphicon glyphicon-plus">新增</span>
+    		</button>
+   			</div>
+   			
+            <label>名称</label><input type="text" class="s-text txt-def" id="dictName" />
+            <button type="button" onclick="toQuery();" style="margin-left:25px;" class="form_Button btn btn-primary btn-xs">查询</button>
+            <button type="button" onclick="toReset('#query_cond input,select,textarea');" class="form_Button btn btn-primary btn-xs">清空</button>
+        </div>
+        <div id="query_list"></div>
+    </div>
+</div>
+<div id="new_dict_def" style="display:none;overflow:hidden;">
+    <form name="basic-form" method="post" id="basic_form" class="liger-form" data-validate="{}">
+        <div class="lineD">
+            <div class="labelD"><label>资源ID</label></div>
+            <div class="dplD"><input type="text" ltype="text" class="required s-text txt-def" id="resourceidS" /></div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>名称</label></div>
+            <div class="dplD"><input type="text" ltype="text" class="required s-text txt-def" id="newNameS" /></div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>位置</label></div>
+            <div class="dplD"><input type="text" ltype="text" class="required s-text txt-def" id="newUriS" /></div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>类型</label></div>
+            <!--  <div class="dplD"><select class="txt-def" id="newType" param="rbac.org_type" default="1" style="margin-right: 30px;"></select></div>
+            -->
+            <div class="dplD"><input type="text" id="orgType_combobox" ltype="combobox" class="diff" validate="{required:true,minlength:3,maxlength:10,notnull:true}" nullText="不能为空!"/></div>
+            <input type="hidden" id="newType" />
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>状态</label></div>
+            <div class="dplD"><select class="txt-def" id="newStatus" param="rbac.status" default="1" style="margin-right: 30px;"></select></div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>说明</label></div>
+            <div class="dplD"><textarea cols="24" rows="5" id="newDesc"></textarea></div>
+        </div>
+        <div class="lineD" style="margin-top:15px;padding-left:30%;">
+            <button type="button" onclick="toAdd();" class="form_Button btn btn-primary btn-xs">保存</button>
+    		<button type="button" onclick="toReset('#up_dict_pw input,select,textarea')" class="form_Button btn btn-primary btn-xs">清空</button>
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

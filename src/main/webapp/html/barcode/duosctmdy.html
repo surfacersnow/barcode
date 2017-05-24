@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>生产条码打印</title>
+<link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.css">
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script src="../../lib/bootstrap/js/bootstrap.js"></script>
+<script src="../../js/common.js" ></script>
+<script src="../../lib/Bootstrap-3-Typeahead/bootstrap3-typeahead.js"></script>
+</head>
+<body>
+ <div class="panel panel-success" style="width:80%; margin:5% auto; min-width:740px; max-width:800px;">
+    <div class="panel-heading">
+        <h3 class="panel-title">单生产条码打印</h3>
+    </div>
+    <div class="panel-body">
+         <div class="form-group">
+            <label class="col-sm-2 control-label">生产编号：</label>
+            <div class="col-sm-3">
+               <input name="sctm" id="sctm" class="form-control input-sm"  placeholder="输入生产编号..." maxlength="12" ondblclick="this.value=''" onkeypress="if(event.keyCode==13) {printbarcode();return false;}"/>
+            </div>
+            <label class="col-sm-2 control-label">打印份数：</label>
+            <div class="col-sm-3">
+                <input type="text" name="dyfs" id="dyfs"  value = "1" class="form-control input-sm" placeholder="输入打印份数..." />
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-primary btn-lg" onclick="printbarcode()" >打印</button>
+            </div>
+         </div>
+        </div>
+    </div>
+</div>
+<object id="SNBCActiveX" classid="clsid:D82D4A6C-3C77-4FB5-A945-F469E973C49C" 
+         codebase="SNBCActiveX.CAB#version=1,0,1" style="display: none;">
+</object>
+    <script type="text/javascript" language="javascript">
+    $('#sctm').focus();
+          function printbarcode(){
+          var regu = /^[1-9]\d*$/;
+          var activeX = document.getElementById("SNBCActiveX");
+          var sctm=$("#sctm").val();
+          var dyfs=$("#dyfs").val();
+          if(dyfs==''||typeof(dyfs)=='undefined'){
+        	  dyfs = 1;
+          }else{
+        	  if (!regu.test(dyfs)) {
+        		  alert("请输入正整数！");
+        	  }
+          }
+          if(sctm!=''&&sctm!=null){
+         	  ajaxSubmitGet("../../tmwh/printBarcode/"+sctm, function(data) {
+        		  var barcode_data = data['data'];
+     	         var khbh=barcode_data.barcode_khbh;
+     	         if(typeof(khbh)=="undefined"){ 
+     	        	alert("生产编号在基础数据中不存在，请先维护条码基础数据！");
+     	 	         return false;
+     	         }
+     	        activeX.PrintSmallBarCode(sctm,dyfs);
+        	  },null,false);
+          }
+         }
+          $(document).keyup(function (e) {//捕获文档对象的按键弹起事件  
+        	    if (e.keyCode == 13) {//按键信息对象以参数的形式传递进来了  
+        	    	printbarcode();
+        	    }  
+        	});
+          $(document).ready(function(){
+      		getBarcodeSc();
+              $("#sctm").typeahead({
+                  source: datasc,//数据源
+                  items: 8,//最多显示个数
+                  updater: function (item) {
+                      return item;//这里一定要return，否则选中不显示，外加调用display的时候null reference错误。
+                  },
+                  displayText: function (item) {
+                      return item;//返回字符串
+                  },
+                  afterSelect: function (item) {
+                      //选择项之后的事件 ，item是当前选中的。
+                  },
+                  delay: 500//延迟时间
+              });
+      	 });
+        function getBarcodeSc(){
+      	  ajaxSubmitGet("../../tmwh/queryBarcodeSc", function(data) {
+      		  datasc = data;
+    	 	   },null,false);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8">
+    <title>条码维护</title>
+    <link href="../../lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-table/bootstrap-table.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/bootstrap-table.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/extensions/export/bootstrap-table-export.js"></script>
+    <script type="text/javascript" src="../../lib/tableExport/tableExport.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-toastr/toastr.min.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-validation/messages_cn.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-toastr/ewin.js"></script>
+    <script type="text/javascript" src="../../lib/fileupload/ajaxfileupload.js" ></script>
+    <script type="text/javascript" src="../../js/common.js" ></script>
+    <script type="text/javascript" src="tmwh.js" ></script>
+    <style>
+        .col-sm-1 {
+            width: 10%;
+        }
+        .col-sm-2 {
+            width: 20%;
+        }
+        .col-sm-10 {
+            width: 80%;
+        }
+       .col-sm-4 {
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+	<nav class="navbar navbar-default" style="margin-bottom: 0px">
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <form class="navbar-form navbar-left" id="searchFrom" role="search">
+		      <div class="form-group">
+				客户编号：
+				</div>
+		        <div class="form-group">
+		            <input type="text" id="Search_barcode_khbh" name="Search_barcode_khbh" class="form-control" style="width: 95px;">
+				</div>
+				<div class="form-group">
+				生产编号：
+				</div>
+	          	<div class="form-group">
+			    	<input type="text" id="Search_barcode_sc" class="form-control" style="width: 120px;">
+				</div>
+				<div class="form-group">	
+			        <input id="btn_query" type="button" onclick="toQuery()" class="btn btn-primary" value="查询">
+			    </div>
+		      	
+		      </form>
+		    </div>
+		</nav>
+	 <div id="tablediv" style="width: 99%">
+		<div id="toolbar" class="btn-group">
+			<button id="btn_add" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+			</button>
+			<button id="btn_edit" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>修改
+			</button>
+			<button id="btn_delete" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+			</button>
+			<button id="btn_import" type="button"  class="btn btn-default">
+				<span class="glyphicon glyphicon-import" aria-hidden="true"></span>导入
+			</button>
+			<button id="btn_download" type="button"  class="btn btn-default">
+				<span class="glyphicon glyphicon-download" aria-hidden="true"></span>模板下载
+			</button>
+		</div>
+		<table id="barcodegrid"></table>
+	</div>
+	<div id="pop_div">
+	 	<div class="modal fade" id=addMx_Modal tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h4 class="modal-title" id="exampleModalLabel">导入条码基础数据:</h4>
+		      </div>
+		      <div class="modal-body">
+		        <div id="form_table">
+		        	<input type="file" name="file" id="file">
+		        </div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" id="pop_add_button" class="btn btn-primary" data-dismiss="modal">导入</button>
+		        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	</div>
+	
+	 <div id="addbarcode_modal" class="modal fade">
+        <div class="modal-dialog modal-full">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 id="modaltitle" class="modal-title"></h4>
+                </div>
+                <form class="form-horizontal form-bordered form-row-strippe" id="ffAdd" action="" data-toggle="validator" enctype="multipart/form-data">
+                <div class="modal-body">
+                   <div class="form-group">
+                    	<label class="col-sm-2 control-label">客户名称：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_sc" id="barcode_khmc" class="form-control input-sm"  placeholder="客户名称" />
+				       </div>
+				      <label class="col-sm-2 control-label">客户编号：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_khbh" id="barcode_khbh" class="form-control input-sm"  placeholder="客户编号" onblur="checkBarcodeKhbh()"/>
+				       </div>
+                    </div>
+                    <div class="form-group">
+                    	<label class="col-sm-2 control-label">生产编号：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_sc" id="barcode_sc" class="form-control input-sm"  placeholder="生产编号" />
+				       </div>
+				       <label class="col-sm-2 control-label">客户UPC码：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_cp" id="barcode_upc" class="form-control input-sm"  placeholder="客户UPC码"  />
+				       </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-sm-2 control-label">偏距：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_pj" id="barcode_pj" class="form-control input-sm"  placeholder="-43" />
+				       </div>
+				     <label class="col-sm-2 control-label">款式：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_ks" id="barcode_ks" class="form-control input-sm"  placeholder="172"  />
+				       </div>
+                    </div>
+                    <div class="form-group">
+             		    <label class="col-sm-2 control-label">中心孔：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_zxk" id="barcode_zxk" class="form-control input-sm"  placeholder="83.06" />
+				       </div>
+				       <label class="col-sm-2 control-label">规格：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_gg" id="barcode_gg" class="form-control input-sm"  placeholder="15X10" />
+				       </div>
+                    </div>
+                     <div class="form-group">
+             		
+				       <label class="col-sm-2 control-label">PCD：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_pcd" id="barcode_pcd" class="form-control input-sm"  placeholder="5X114.3" />
+				       </div>
+				        <label class="col-sm-2 control-label">单毛重(kg)：</label>
+					  <div class="col-sm-3">
+						<input type="text" name="barcode_mjz" id="barcode_mjz" class="form-control input-sm" placeholder="10.4" />
+						</div>
+                    </div>
+                    <div class="form-group">
+					 
+						<label class="col-sm-2 control-label">单净重(kg)：</label>
+						<div class="col-sm-3">
+						<input type="text" name="barcode_djz" id="barcode_djz" class="form-control input-sm" placeholder="8.66" />
+					</div>
+					<label class="col-sm-2 control-label">单体积：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_djt" id="barcode_djt" class="form-control input-sm"  placeholder="0.051" />
+				       </div>
+				   </div>
+					<div class="form-group">
+					  <label class="col-sm-2 control-label">包装方式：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_bzfs" id="barcode_bzfs" class="form-control input-sm"  placeholder="纸箱散装" />
+				       </div>
+             		   <label class="col-sm-2 control-label">表面状态：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_bmzt" id="barcode_bmzt" class="form-control input-sm"  placeholder="全涂装沙丁黑" />
+				       </div>
+                    </div>
+                    <div class="form-group">
+             		   <label class="col-sm-2 control-label">状态英文：</label>
+				       <div class="col-sm-3">
+						  <input name="barcode_bmztyw" id="barcode_bmztyw" class="form-control input-sm"  placeholder="XXXXX" />
+				       </div>
+				       <label class="col-sm-2 control-label">编号：</label>
+				       <div class="col-sm-3">
+				       	<select name="barcode_bqbh" id="barcode_bqbh" class="form-control">
+							<option>V1</option>
+							<option>V2</option>
+						</select>
+				       </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-info">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button id="btn_submit" type="button" class="btn btn-primary submit">确定</button>
+                </div>
+             </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</body>
+</html>

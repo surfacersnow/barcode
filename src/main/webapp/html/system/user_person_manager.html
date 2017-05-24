@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>个人信息修改</title>
+    <link rel="stylesheet" type="text/css" href="../../css/cm-default.css" />
+	<link rel="stylesheet" type="text/css" href="../../css/main.css" />
+	<link type="text/css" rel="stylesheet" href="../../css/public.css"  />
+	<link type="text/css" rel="stylesheet" href="../../css/pub.css"  />
+	<link href="../../lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-toastr/toastr.min.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-toastr/ewin.js"></script>
+	<script type="text/javascript" src="../../js/common.js" ></script>
+	<script type="text/javascript" src="../../js/pub.js"></script>
+	<script type="text/javascript" src="../../lib/md5.js"></script>
+	<script type="text/javascript">
+		$(function() {
+	 	  ajaxSubmitGet("../../system/userperson",function(data) {
+	 		 bindVal(data);
+	 	   });
+	 		$('#add').hide();
+			$('#update').show();
+			$('#updatePwd').show();
+			$("#btn_submit").click(function () {
+		 		 var param = {};
+		 		 param.id=$("#id").val();
+		 		 param.passwd = hex_md5($("#passwd2").val()).toUpperCase();
+		 		 var data = JSON.stringify(reqJson('system.update.updatePasswdUser',JSON.stringify(param)));
+			 	 ajaxSubmit("../../system/update", data, function(data) {
+			 	 if (data) {
+			 		if (parseInt(data['status']) > 0) {
+			 		  toastr.success('保存成功');
+			 		  $("#passwd_modal").modal("hide")
+			 		} else {
+			 		  toastr.error('保存失败');
+			 		}
+			  }
+			 });	
+		 	});
+		});
+		function bindVal(data) {
+ 		    var user_data = data['data'];
+ 		    //绑定主表数据
+ 		     $("#account").val(user_data.account);
+ 		     $("#name").val(user_data.name);
+ 		     $("#deptname").val(user_data.deptname);
+ 		     $("#email").val(user_data.email);
+ 		     $("#description").val(user_data.description);
+ 		     $("#id").val(user_data.id);
+		     $("#passwd").val(user_data.passwd);
+ 		}
+		function toSave() {
+			if(!JqValidate()){   
+				return;
+		     }  
+ 			var param = $('#basic_form').serializeObject();
+ 		    var data = JSON.stringify(reqJson('system.update.updateUserPerson',JSON.stringify(param)));
+		    ajaxSubmit("../../system/update", data, function(data) {
+		    	if (data) {
+		            if (parseInt(data['status']) > 0) {
+		            	toastr.success('保存成功');
+		            	$("#adduser_modal").modal("hide")
+		            	$('#add').hide();
+		    			$('#update').show();
+		    			$('#updatePwd').show();
+		    			$('input').attr("readonly","readonly");
+		            } else {
+		            	toastr.error('保存失败');
+		            }
+		        }
+		    });	
+ 		}
+		function toUpdate() {
+			$('#add').show();
+			$('#update').hide();
+			$('#updatePwd').hide();
+			$("input:not([name='account'])").removeAttr("readonly");
+ 		}
+		function toUpdatePwd(){
+			 $("#modaltitle").text("修改密码");
+	 		 $("#passwd_modal").find(".form-control").val("");
+	 		$('#passwd_modal').modal('show');
+		}
+		function JqValidate(){
+			if($("#deptname").val()===''){
+				alert("请输入单位！");
+				return false;
+			}
+			if($("#name").val()===''){
+				alert("请输入姓名！");
+				return false;
+			}
+			if($("#email").val()===''){
+				alert("请输入邮箱！");
+				return false;
+			}
+			return true;
+		}  
+		function checkPwd(){
+			var oldpwd = hex_md5($("#passwd1").val()).toUpperCase();
+			if(oldpwd===$("#passwd").val()){
+				
+			}else{
+				toastr.error('旧密码输入不正确！');
+			}
+		}
+	</script>
+  </head>
+  
+  <body>
+	  <div class="form_tab contextHeight">
+			<div id="form_option" class="contextWidth form_option">
+				<div class="contextWidth form_option_content">
+				<table><tr><td><span id="info" name="info" style="color: #0000FF"></span></td></tr></table>
+					<button id="add" type="button" onclick="toSave()" class="btn btn-primary">保存</button>
+					<button id="update" type="button" onclick="toUpdate()" class="btn btn-primary">修改信息</button>
+					<button id="updatePwd" type="button" onclick="toUpdatePwd()" class="btn btn-primary">修改密码</button>
+				</div>
+			</div>
+			<div id="form_core" class="form_core">
+				<div id="formContent" class="formContent">
+					<div class="form_core_content">
+						<div id="form_content">
+							<form class="form-horizontal" name="basic-form" method="post" id="basic_form" data-validate="{}">
+								<div class="form_core_content_header">
+									<h3>个人基本信息&nbsp;</h3>
+								</div>
+								<input name="id" id="id"  type="hidden"/>
+								<input name="passwd" id="passwd"  type="hidden"/>
+								<div class="form-group">
+									<label for="account" class="col-sm-2 control-label">账 号：</label>
+									<div class="col-sm-8">
+									   <input name="account" id="account" 
+											class="required form-control input-sm"  readonly="readonly" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="name" class="col-sm-2 control-label">姓 名：</label>
+									<div class="col-sm-8">
+									   <input name="name" id="name"
+											class="required form-control input-sm" readonly="readonly" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="deptname" class="col-sm-2 control-label">单位：</label>
+									<div class="col-sm-8">
+									   <input name="deptname" id="deptname"  
+									   class="required form-control input-sm" readonly="readonly"/>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="email" class="col-sm-2 control-label">邮箱：</label>
+										<div class="col-sm-8">
+									   <input name="email" id="email" type="email"
+									   class="required form-control input-sm" readonly="readonly"/>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="description" class="col-sm-2 control-label">说明：</label>
+									<div class="col-sm-8">
+									   <input name="description" id="description"  readonly="readonly"
+									   class="required form-control input-sm"  />
+									</div>
+								</div>
+							</form>
+						</div>
+						<div>
+					</div>
+					</div>
+				</div>
+			</div>
+	    </div>
+	  <div id="passwd_modal" class="modal fade">
+        <div class="modal-dialog modal-full">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 id="modaltitle" class="modal-title"></h4>
+                </div>
+                <form class="form-horizontal form-bordered form-row-strippe" id="pwd" action="" data-toggle="validator" enctype="multipart/form-data">
+                <div class="modal-body">
+                 <div class="form-group">
+				       <label class="col-sm-2 control-label">旧密码：</label>
+				       <div class="col-sm-8">
+						  <input name="passwd1" id="passwd1"  type="password" class="form-control input-sm" onblur="checkPwd()" />
+				       </div>
+                  </div>
+				   <div class="form-group">
+				       <label class="col-sm-2 control-label">新密码：</label>
+				       <div class="col-sm-8">
+						  <input name="passwd2" id="passwd2" type="password" class="form-control input-sm"/>
+				       </div>
+                  </div>
+                  <div class="form-group">
+				       <label class="col-sm-2 control-label">确认密码：</label>
+				       <div class="col-sm-8">
+						  <input name="passwd3" id="passwd3" type="password" class="form-control input-sm" />
+				       </div>
+                  </div>
+                </div>
+                <div class="modal-footer bg-info">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button id="btn_submit" type="button" class="btn btn-primary submit">保存</button>
+                </div>
+             </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+  </body>
+</html>

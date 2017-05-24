@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=9" />
+	<meta name="renderer" content="webkit">
+    <title></title> 
+    <link type="text/css" rel="stylesheet" href="lib/ligerUI/skins/AquaCustomer/css/ligerui-all.css" />
+    <script type="text/javascript" src="lib/jquery/jquery-1.9.1.min.js" ></script>
+    <script type="text/javascript" src="lib/ligerUI/js/core/base.js" ></script>
+    <script type="text/javascript" src="lib/ligerUI/js/plugins/ligerPanel.js" ></script>
+    <script type="text/javascript" src="lib/ligerUI/js/plugins/ligerPortal.js" ></script>
+    <script type="text/javascript">
+        var g;
+        $(function ()
+        {
+            g = $("#portalMain").ligerPortal({
+                draggable : true,
+                rows: [ 
+                    {
+                    columns: [{
+                    width: 300,
+                    panels: [{
+                        title: '生活助手',
+                        width: '100%',
+                        height: 300,
+                        url: './html/desktop/LifeAssistant.html',
+                        showClose: true
+                    }]
+                   }]
+                }],
+            }); 
+        });
+        
+    </script>
+
+</head>
+<body style="padding:10px">
+        <div style="width:100%;" id="portalMain"> 
+        </div> 
+   
+</body>
+</html>

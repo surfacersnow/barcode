@@ -1,0 +1,860 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <bean id="rbac" class="com.ruisoft.core.dml.DMLConfig">
+        <property name="select">
+            <map>
+                <entry key="cm_partner">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                        SELECT id, company_id, dept_id, code, name, display_name, title, job, is_company, customer, supplier, parent_id, commercial_partner_id, user_id, country_id, region, zip, street, phone, mobile, fax, email, website, signup_type, signup_code, signup_expiration, tax_code, legal_person, register_fund, business_socpe, ref, brief, active, note, create_date, create_uid, write_uid, write_date
+                                        FROM cm_partner WHERE id ={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="cm_partner_per">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                        SELECT id, job, parent_id, phone, mobile, ref, create_date, create_uid, write_uid, write_date
+                                        FROM cm_partner WHERE parent_id ={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="user.login">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT U.ID USERID ,U.CODE,U.ACCOUNT,U.NAME UNAME,U.STATUS STATUS
+											FROM CM_USER U WHERE U.ACCOUNT={uname} AND U.PASSWD={pwd:str}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="user">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID, NAME, PASSWORD FROM user WHERE NAME = {name}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="org.byUser.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT U.ID USERID,U.ACCOUNT,U.NAME UNAME,O.ID OID,O.higher_id CID,O.NAME ONAME,CASE WHEN U.STATUS=1 AND O.STATUS=1 THEN 1 ELSE 0 END STATUS
+                                      		FROM CM_USER U,CM_ORG O WHERE U.ORGID=O.ID AND U.ID={userId} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <!--获取用户的角色 -->
+                <entry key="getRoles.byUser">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT cr.ID RID ,cr.CODE,cr.NAME FROM cm_role cr,cm_user_role_rel cur WHERE cr.ID =cur.ROLE_ID AND cur.USER_ID={userId} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="menu.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                           <![CDATA[SELECT M.Code ID,M.HIGHER_ID  PID,M.NAME TEXT,cm_resource.URI URL,M.Layer ,M.ICON_URI,M.Detail,M.HINT
+FROM CM_MENU M ,cm_resource ,cm_user_role_rel ,cm_role_resource_rel
+WHERE  cm_user_role_rel.ROLE_ID=cm_role_resource_rel.ROLE_ID AND m.RESOURCE_ID=cm_role_resource_rel.RESOURCE_ID  AND cm_resource.ID=m.RESOURCE_ID AND M.STATUS='1'  AND cm_resource.STATUS='1' AND cm_user_role_rel.USER_ID={userId}  ORDER BY HIGHER_ID,CODE,SEQ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT id, code, name, type, status, note FROM cm_dict]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="code" value=":like(lr)" />
+                                <entry key="status" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryId">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT id, code, name, type, status, note FROM cm_dict where id={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryItem">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT id, code, dict_id, dict_line_id, name, value, seq, path, layer, detail, status, note FROM cm_dict_line ]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="code" value=":like(lr)" />
+                                <entry key="status" value="" />
+                                <entry key="dict_id" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="item.def.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT id, code, dict_id, dict_line_id, name, value, seq, path, layer, detail, status, note FROM cm_dict_line where id ={id} ORDER BY seq ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.item.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT line.name,line.value,line.seq,line.status FROM cm_dict_line  line INNER JOIN cm_dict dict ON line.dict_id=dict.id AND dict.code={d} ORDER BY seq]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="key.generator.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT KEY_ID,MAX_VAL,CIRCLE,ORG_ID,DESCRIPTION FROM CM_KEY_GENERATOR WHERE KEY_ID={keyid} AND ORG_ID={orgid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryUser">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,Account,NAME,ORGID,STATUS,DESCRIPTION FROM CM_User]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="account" value="str:like(lr):and" />
+                                <entry key="name" value=":like(lr)" />
+                                <entry key="status" value="int" />
+                                <entry key="id" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryOrg">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,CODE,NAME,SHORTFOR,HIGHER_ID,ORG_TYPE,DIRECTOR,ADDRESS,TEL,FAX,ZIPCODE,STATUS,DESCRIPTION FROM cm_org]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="shortfor" value=":like(lr)" />
+                                <entry key="status" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryRole">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,CODE,NAME,IS_EXT,STATUS,DESCRIPTION FROM cm_role]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="status" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryuserrole">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME,STATUS,DESCRIPTION FROM CM_ROLE where id not in (select ROLE_ID from cm_user_role_rel t where t.USER_ID={userid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryuserroleyes">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME,STATUS,DESCRIPTION FROM CM_ROLE where id  in (select ROLE_ID from cm_user_role_rel t where t.USER_ID={userid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryRoleResouce">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME FROM CM_RESOURCE where id not in (select RESOURCE_ID from CM_ROLE_RESOURCE_REL t where t.ROLE_ID={roleid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryRoleResouceyes">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME FROM CM_RESOURCE where id  in (select RESOURCE_ID from CM_ROLE_RESOURCE_REL t where t.ROLE_ID={roleid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryResource">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME,URI,TYPE,STATUS,DESCRIPTION FROM CM_RESOURCE]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="status" value="int" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryMenu">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID, CODE, NAME, HIGHER_ID, SEQ, RESOURCE_ID, ICON_URI, HINT, Path, Layer, Detail, STATUS, DESCRIPTIOIN FROM cm_menu ]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="status" value="int" />
+                            </map>
+                        </property>
+                        <property name="order" value="code" />
+
+                    </bean>
+                </entry>
+                <entry key="partner.queryPartner">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT * FROM (SELECT id, company_id, dept_id, code, name, display_name, title, job, is_company, customer, supplier,
+                                         parent_id, commercial_partner_id, user_id, country_id, region, zip, street, phone,
+                                         mobile, fax, email, website, signup_type, signup_code, signup_expiration, tax_code,
+                                         legal_person, register_fund, business_socpe, ref, brief, active, note, create_date,
+                                         create_uid, write_uid, write_date FROM cm_partner where parent_id is null or parent_id = '') AS partner ]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="code" value=":like(lr)" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryCompact">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID, Code, Name, partner_id, product_code, product_name, product_qty, product_uom, Link_Man, telephone, Signed_Date, Start_Date, End_Date,Description FROM cm_compact]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="code" value=":like(lr)" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryOrg">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,CODE,NAME,SHORTFOR,HIGHER_ID,ORG_TYPE,DIRECTOR,ADDRESS,TEL,FAX,ZIPCODE,STATUS,DESCRIPTION FROM cm_org]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="shortfor" value=":like(lr)" />
+                                <entry key="status" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryMenu">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID, CODE, NAME, HIGHER_ID, SEQ, RESOURCE_ID, ICON_URI, HINT, Path, Layer, Detail, STATUS, DESCRIPTIOIN FROM cm_menu ]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="status" value="int" />
+                            </map>
+                        </property>
+                        <property name="order" value="code" />
+
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryResource">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME,URI,TYPE,STATUS,DESCRIPTION FROM CM_RESOURCE]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="status" value="int" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.queryRole">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,CODE,NAME,IS_EXT,STATUS,DESCRIPTION FROM cm_role]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="status" value="" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryRoleResouce">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME FROM CM_RESOURCE where id not in (select RESOURCE_ID from CM_ROLE_RESOURCE_REL t where t.ROLE_ID={roleid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryRoleResouceyes">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID,NAME FROM CM_RESOURCE where id  in (select RESOURCE_ID from CM_ROLE_RESOURCE_REL t where t.ROLE_ID={roleid} )]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.queryCompact">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ID, Code, Name, partner_id, product_code, product_name, product_qty, product_uom, Link_Man, telephone, Signed_Date, Start_Date, End_Date,Description FROM cm_compact]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="name" value="str:like(lr):and" />
+                                <entry key="code" value=":like(lr)" />
+                            </map>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="add">
+            <map>
+                <entry key="cm_partner.addPartner">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                  INSERT INTO cm_partner (id, company_id, dept_id, code, name, display_name, title, job, is_company, customer, supplier, parent_id, commercial_partner_id, user_id, country_id, region, zip, street, phone, mobile, fax, email, website, signup_type, signup_code, signup_expiration, tax_code, legal_person, register_fund, business_socpe, ref, brief, active, note, create_date, create_uid, write_uid, write_date)
+                                   VALUES ({id}, {company_id}, {dept_id}, {code}, {name}, {display_name}, {title}, {job}, {is_company}, {customer}, {supplier}, {parent_id}, {commercial_partner_id}, {user_id}, {country_id}, {region}, {zip}, {street}, {phone}, {mobile}, {fax}, {email}, {website}, {signup_type}, {signup_code}, {signup_expiration}, {tax_code}, {legal_person}, {register_fund}, {business_socpe}, {ref}, {brief}, {active}, {note}, {create_date}, {create_uid}, {write_uid}, {write_date})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="partner.addPartner">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO cm_partner (id, company_id, dept_id, code, name, display_name, title, job, is_company, customer, supplier, parent_id, commercial_partner_id, user_id, country_id, region, zip, street, phone, mobile, fax, email, website, signup_type, signup_code, signup_expiration, tax_code, legal_person, register_fund, business_socpe, ref, brief, active, note, create_date, create_uid, write_uid, write_date)
+                                         VALUES ({#pk_uuid}, {company_id}, {dept_id}, {code}, {name}, {display_name}, {title}, {job}, {is_company}, {customer}, {supplier}, {parent_id}, {commercial_partner_id}, {user_id}, {country_id}, {region}, {zip}, {street}, {phone}, {mobile}, {fax}, {email}, {website}, {signup_type}, {signup_code}, {signup_expiration}, {tax_code}, {legal_person}, {register_fund}, {business_socpe}, {ref}, {brief}, {active}, {note}, {create_date}, {create_uid}, {write_uid}, {write_date})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.addUser">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_User(ID,Code,Account,NAME,Passwd,orgid,STATUS,DESCRIPTION) VALUES({#user.id},{code},{account},{name},{password},{orgid},{status},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="user">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                   INSERT INTO user (ID, NAME, PASSWORD)
+                                   VALUES ({id}, {name}, {password})
+                                ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+
+                <entry key="user.key">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                   INSERT INTO user (ID, NAME, PASSWORD)
+                                   VALUES ({#user.code}, {name}, {password})
+                                ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.addUserRole">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO cm_user_role_rel(USER_ID,ROLE_ID) VALUES({userid},{roleid})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO cm_dict (id, code, name, type, status, note)
+                                         VALUES ({#pk_uuid}, {code}, {name}, {type}, {status}, {note})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.item.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO cm_dict_line (id, code, dict_id, dict_line_id, name, value, seq, path, layer, detail, status, note)
+                                VALUES ({#pk_uuid}, {code}, {dict_id}, {dict_line_id}, {name}, {value}, {seq:int}, {path}, {layer:int}, {detail}, {status}, {note})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.addOrg">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_org(ID,Code,NAME,Shortfor,Org_Type,Higher_ID,Address,Tel,Fax,Zipcode,Status,DESCRIPTION) VALUES({#org.id},{code},{name},{shortfor},{org_type},{Higher_ID},{address},{tel},{fax},{zipcode},{status},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.addMenu">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_MENU (ID,CODE,NAME,HIGHER_ID,SEQ,RESOURCE_ID,ICON_URI,HINT,Path,Layer,Detail,STATUS,DESCRIPTIOIN)
+                                        VALUES ({#menu.id},{code},{name},{higher_id},{seq:int},{resource_id},{icon_uri},{hint},{path},{layer:int},{detail},{status},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.addResource">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_RESOURCE(ID,NAME,URI,TYPE,STATUS,DESCRIPTION) VALUES({id},{name},{uri},{type},{status},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.addrole">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_role(ID,CODE,NAME,Status,IS_EXT,DESCRIPTION) VALUES({#role.id},{code},{name},{status},{isext},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.addRoleResourceid">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_ROLE_RESOURCE_REL(ROLE_ID,RESOURCE_ID) VALUES({roleid},{resourceid})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.addResource">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[INSERT INTO CM_RESOURCE(ID,NAME,URI,TYPE,STATUS,DESCRIPTION) VALUES({id},{name},{uri},{type},{status},{desc})]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="update">
+            <map>
+                <entry key="cm_partner.updatePartner">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE cm_partner SET company_id = {company_id},dept_id = {dept_id},
+                                     code = {code},	name = {name},display_name = {display_name},title = {title},
+                                     job = {job},is_company = {is_company},customer = {customer},supplier = {supplier},
+                                     parent_id = {parent_id},commercial_partner_id = {commercial_partner_id},user_id = {user_id},
+                                     country_id = {country_id},region = {region},zip = {zip},street = {street},phone = {phone},
+                                     mobile = {mobile},fax = {fax},email = {email},website = {website},signup_type = {signup_type},
+                                     signup_code = {signup_code},signup_expiration = {signup_expiration},tax_code = {tax_code},legal_person = {legal_person},
+                                      register_fund = {register_fund},business_socpe = {business_socpe},ref = {ref},brief = {brief},
+                                      active = {active},note = {note},write_uid = {write_uid},write_date = {write_date}
+                                       WHERE id = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="mesg_recv.updateRecvState">
+                <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                    <property name="sql">
+                        <value>
+                            <![CDATA[UPDATE mesg_recv SET mesg_recv_state = {mesg_recv_state} WHERE mesg_recv_msid = {mesg_recv_msid}]]>
+                        </value>
+                    </property>
+                </bean>
+                </entry>
+                <entry key="mesg_send.updateSendState">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE mesg_send SET mesg_send_state = {mesg_send_state} WHERE mesg_send_msid = {mesg_send_msid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="mesg_send.updateSendRead">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE mesg_send SET mesg_recv_resta = {mesg_recv_resta},mesg_recv_time={mesg_recv_time},mesg_recv_rid={mesg_recv_rid}
+                                         WHERE mesg_recv_uid = {mesg_recv_uid} AND mesg_send_msid ={mesg_send_msid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.updateCompact">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE cm_compact SET Code = {code}, Name = {name}, partner_id = {partner_id}, product_code = {product_code},
+ product_name = {product_name}, product_qty = {product_qty}, product_uom = {product_uom}, Link_Man = {link_man},
+ telephone = {telephone}, Signed_Date = {signed_date}, Start_Date = {start_date}, End_Date = {end_date},
+  Description = {description} WHERE ID = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="partner.updatepartner">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE cm_partner SET company_id = {company_id},	dept_id = {dept_id},code = {code},	name = {name},display_name = {display_name},
+	                                     title = {title},job = {job},is_company = {is_company},customer = {customer},supplier = {supplier},
+	                                     parent_id = {parent_id},commercial_partner_id = {commercial_partner_id},
+	                                     user_id = {user_id},country_id = {country_id},region = {region},zip = {zip},street = {street},phone = {phone},
+	                                     mobile = {mobile},fax = {fax},email = {email},website = {website},signup_type = {signup_type},signup_code = {signup_code},
+	                                     signup_expiration = {signup_expiration},tax_code = {tax_code},legal_person = {legal_person},register_fund = {register_fund},
+	                                     business_socpe = {business_socpe},ref = {ref},brief = {brief},active = {active},note = {note},write_uid = {write_uid},write_date = {write_date}
+                                         WHERE id={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.updateuser">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_USER SET Account={account},NAME={name},Orgid={orgid},STATUS={status},DESCRIPTION={description} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.updateuserpd">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_USER SET passwd={pwd} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.update">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE cm_dict SET code = {code},name = {name},type = {type},status = {status},note = {note} WHERE id = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.item.update">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE cm_dict_line SET code = {code},	dict_id = {dict_id},dict_line_id = {dict_line_id},
+                                         name = {name},value = {value},seq = {seq:int},path = {path},layer = {layer:int},detail = {detail},status = {status},
+                                         note = {note} WHERE id = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="user">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE user SET NAME={name},PASSWORD={password} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.updateOrg">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_ORG SET code={code}, NAME={name},Shortfor={shortfor},org_type={org_type},Higher_ID={higher_id},Address={address},Tel={tel},Fax={fax},Zipcode={zipcode},STATUS={status},DESCRIPTION={description} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.updateMenu">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_MENU SET CODE ={code},NAME = {name},HIGHER_ID = {higher_id},SEQ = {seq},RESOURCE_ID = {resource_id},ICON_URI = {icon_uri},HINT = {hint},Path = {path},Layer = {layer},DETAIL={detail},STATUS = {status},DESCRIPTIOIN = {descriptioin} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.updateresource">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_RESOURCE SET NAME={name},URI={uri},TYPE={type},STATUS={status},DESCRIPTION={description} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.updaterole">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE CM_role SET CODE={code},NAME={name},STATUS={status},IS_EXT={is_ext},DESCRIPTION={description} WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="delete">
+            <map>
+                <entry key="user">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM user WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.delete">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_DICT WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.item.delete">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_DICT_LINE where ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.deleteitem">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_DICT_LINE WHERE DICT_ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.deleteorg">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_ORG WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.deleMenu">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_MENU WHERE ID={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.deleResource">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_RESOURCE WHERE ID={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.deleterole">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_ROLE WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.deleRoleResource">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_ROLE_RESOURCE_REL WHERE ROLE_ID={roleid} and RESOURCE_ID={resourceid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.deleResource">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_RESOURCE WHERE ID={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="dict.def.deleteuser">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM CM_USER WHERE ID={id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="def.deleUserrole">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM cm_user_role_rel WHERE USER_ID={userid} and ROLE_ID={roleid}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="delete_pattner">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM Cm_Partner WHERE ID={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="delete_pattner_per">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM Cm_Partner WHERE parent_id={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="deletePartner_per">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM Cm_Partner WHERE id={id} ]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

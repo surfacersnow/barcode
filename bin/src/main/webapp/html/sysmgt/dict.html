@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>参数字典维护</title>
+<link rel="stylesheet" type="text/css" href="../../css/cm-default.css" />
+<link rel="stylesheet" type="text/css" href="../../css/main.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/Aqua/css/ligerui-all.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/ligerui-icons.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/bootstrap/css/bootstrap.css"/>
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="../../lib/ligerUI/js/ligerui.all.js" ></script>
+<script type="text/javascript" src="../../js/common.js" ></script>
+<script type="text/javascript" src="../../lib/autoInput/AutoInput.js" ></script>
+<script type="text/javascript" src="../../js/pub.js"></script>
+<script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js" ></script>
+<script type="text/javascript" src="../../lib/md5.js"></script>
+<script type="text/javascript" src="dict.js" ></script>
+<style type="text/css">
+	.labelD{width: 27%;position: relative;float: left;padding-top: 3px;}
+
+</style>
+</head>
+<body style="padding:0;">
+<div id="pageloading"></div>
+<div id="layout_main">
+    <div position="center" id="a_center" title="参数字典列表">
+        <div id="query_cond" class="fields">
+        	<div style="padding-left:15px;padding-top:5px;">
+ 			<button type="button" onclick="openDictDef();" class="btn btn-primary btn-xs ">
+   				&nbsp;<span class="glyphicon glyphicon-plus">新增</span>
+    		</button>
+   			</div>
+   			
+            <label>字典名称</label><input type="text" class="s-text txt-def" id="dictName" />
+            <label>字典代码</label><input type="text" class="s-text txt-def" id="dictCode" />
+            <label>状态</label><select id="dictStatus" param="rbac.status" first=""></select>
+            <button type="button" onclick="toQuery();" style="margin-left:25px;" class="form_Button btn btn-primary btn-xs">查询</button>
+            <button type="button" onclick="toReset('#dictName,#dictCode,#dictStatus');" class="form_Button btn btn-primary btn-xs">清空</button>
+       		
+        </div>
+        <div id="query_list"></div>
+    </div>
+</div>
+
+<div id="new_dict_def" style="display:none;overflow:hidden;">
+    <form name="basic-form" method="post" id="basic_form" class="liger-form" data-validate="{}">
+        <div class="lineD">
+            <div class="labelD"><label>字典名称</label></div>
+            <div class="dplD"><input type="text" ltype="text" class="required s-text txt-def" id="newNameS" /></div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>字典代码</label></div>
+            <div class="dplD"><input type="text" ltype="text" class="required s-text txt-def"  id="newCodeS" /></div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>类型</label></div>
+            <div class="dplD">
+                <input type="text" id="newTypeNameS" ltype="combobox" class="required s-text txt-def" />
+                <input type="hidden" id="newTypeS" />
+            </div>
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>状态</label></div>
+            <div class="dplD">
+
+                <input type="text" id="newStatuNameS" ltype="combobox" class="required s-text txt-def" /></div>
+            <input type="hidden" id="newStatuS" />
+        </div>
+        <div class="lineD">
+            <div class="labelD"><label>说明</label></div>
+            <div class="dplD"><textarea cols="24" rows="5" id="newDescS"  ></textarea></div>
+        </div>
+        <div class="lineD" style="margin-top:15px;padding-left:30%;">
+            <button type="button" onclick="toAdd();" class="form_Button btn btn-primary btn-xs">保存</button>
+    		<button type="button" onclick="toReset('#up_dict_pw input,select,textarea')" class="form_Button btn btn-primary btn-xs">清空</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

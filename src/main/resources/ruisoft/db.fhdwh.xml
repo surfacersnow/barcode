@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <bean id="fhdwh" class="com.ruisoft.core.dml.DMLConfig">
+        <property name="select">
+            <map>
+                <entry key="crm_order.query">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                    <property name="dmlType" value="cond" />
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ORDER_CKDH,ORDER_KHMC,ORDER_MDH,ORDER_GH,ORDER_FH,ORDER_FHRQ,case ORDER_FHZT when 1 then '扫码发货' when 2 then '已发货确认' end as ORDER_FHZT,ORDER_FHDY,ORDER_ZDSJ,ORDER_ZDR,ORDER_QRSJ,ORDER_QRR,ORDER_TDH FROM CRM_ORDER ]]>
+                            </value>
+                        </property>
+                        <property name="conditions">
+                            <map>
+                                <entry key="order_ckdh" value="str:like(lr)" />
+                            </map>
+                        </property>
+                         <property name="order" value="  CAST(ORDER_CKDH as SIGNED) desc " />
+                    </bean>
+                </entry>
+                <entry key="crm_order.order_ckdh">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ORDER_CKDH,ORDER_TDH,ORDER_KHMC,ORDER_MDH,ORDER_GH,ORDER_FH,ORDER_FHRQ,ORDER_FHZT,ORDER_FHDY,ORDER_ZDSJ,ORDER_ZDR,ORDER_QRSJ,ORDER_QRR FROM CRM_ORDER WHERE ORDER_CKDH = {order_ckdh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                 <entry key="crm_order.queryXml">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[SELECT ORDER_CKDH,ORDER_FHRQ,ORDER_KHMC,ORDER_MDH,ORDER_GH,ORDER_FH FROM (select @r:=@r+1 as ROWNUM , a.* from ( 
+SELECT ORDER_CKDH,ORDER_FHRQ,ORDER_KHMC,ORDER_MDH,ORDER_GH,ORDER_FH FROM CRM_ORDER WHERE ORDER_FHZT='1'
+ ) as a,(select @r:=0) b) AS T WHERE T.ROWNUM>={rowstart} AND T.ROWNUM<={rowend}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="crm_barcode.queryXml">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[select barcode_khmc,barcode_sc,barcode_khbh,barcode_upc,barcode_ks,barcode_gg,barcode_pcd,barcode_zxk,barcode_pj,barcode_djz,barcode_mjz,barcode_djt,barcode_bmzt,barcode_bmztyw,barcode_bzfs
+ from crm_barcode where BARCODE_KHBH={khbh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                 <entry key="detailsum.queryXml">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[select detailsum_khbh,barcode_sc,barcode_upc,barcode_gg,detailsum_sl,barcode_bmzt,barcode_djz,barcode_mjz,
+detailsum_zjz,detailsum_zmz,barcode_djt,detailsum_ztj,barcode_bzfs from crm_order_detail_sum
+ left join crm_barcode on detailsum_khbh= barcode_khbh where detailsum_ckdh={order_ckdh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="crm_order_detailhz.queryXml">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[select 
+                                t.orderdetail_khbh as orderdetail_khbh,
+                                sum(t.orderdetail_sl) as orderdetail_sl,
+                                sum(t.barcode_mjz) as barcode_mjz,
+								sum(t.barcode_djz) as barcode_djz,
+								sum(t.barcode_djt) as barcode_djt from (
+								select orderdetail_khbh,orderdetail_sl,barcode_mjz,barcode_djz,barcode_djt
+								from crm_order_detail 
+								left join crm_barcode on orderdetail_khbh= barcode_khbh
+								where orderdetail_ckdh={orderDetail_ckdh}) as t group by t.orderdetail_khbh]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="detailinfo.queryXml">
+                    <bean class="com.ruisoft.core.dml.entity.QueryEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[select barcode_khmc,barcode_sc,barcode_khbh,barcode_upc,barcode_ks,barcode_gg,barcode_pcd,barcode_zxk,barcode_pj,barcode_djz,barcode_mjz,barcode_djt,barcode_bmzt,barcode_bmztyw,barcode_bzfs,orderdetail_id
+ from crm_order_detail left join crm_barcode on orderDetail_khbh= BARCODE_KHBH where orderDetail_ckdh={ckdh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="add">
+        	<map>
+                <entry key="crm_order.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                INSERT INTO crm_order (order_ckdh,order_tdh, order_khmc, order_mdh, order_gh, order_fh, order_fhrq, order_fhzt, order_fhdy, order_zdsj, order_zdr, order_qrsj, order_qrr)
+								VALUES ({order_ckdh},{order_tdh},  {order_khmc}, {order_mdh}, {order_gh}, {order_fh}, {order_fhrq}, {order_fhzt}, {order_fhdy}, {order_zdsj}, {order_zdr}, {order_qrsj}, {order_qrr})
+								]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="crm_order_detail.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                INSERT INTO crm_order_detail (orderDetail_id, orderDetail_ckdh, orderDetail_khbh, orderDetail_mtgs, orderDetail_sl, orderDetail_bzsj, orderDetail_bzr)
+								VALUES ({orderDetail_id}, {orderDetail_ckdh}, {orderDetail_khbh}, {orderDetail_mtgs}, {orderDetail_sl}, {orderDetail_bzsj}, {orderDetail_bzr})
+								]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                 <entry key="crm_order_detail_sum.add">
+                    <bean class="com.ruisoft.core.dml.entity.AddEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[
+                                INSERT INTO crm_order_detail_sum (detailsum_id, detailsum_ckdh, detailsum_khbh, detailsum_sl, detailsum_zmz, detailsum_zjz, detailsum_ztj,detailsum_bzsj,detailsum_bzr,detailsum_xgsj,detailsum_xgr)
+								VALUES ({detailsum_id}, {detailsum_ckdh}, {detailsum_khbh}, {detailsum_sl}, {detailsum_zmz}, {detailsum_zjz}, {detailsum_ztj}, {detailsum_bzsj}, {detailsum_bzr}, {detailsum_xgsj}, {detailsum_xgr})
+								]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="update">
+            <map>
+                <entry key="crm_order.update">
+                    <bean class="com.ruisoft.core.dml.entity.UpdateEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[UPDATE crm_order SET order_tdh = {order_tdh},order_fhrq = {order_fhrq},order_khmc = {order_khmc},
+	order_mdh = {order_mdh},order_gh = {order_gh},order_fh = {order_fh} where order_ckdh = {order_ckdh}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="delete">
+            <map>
+                <entry key="crm_order.delete">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM crm_order WHERE order_ckdh = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="crm_orderdetail.delete">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM crm_order_detail WHERE orderDetail_ckdh = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="crm_orderdetailsum.delete">
+                    <bean class="com.ruisoft.core.dml.entity.DeleteEntity">
+                        <property name="sql">
+                            <value>
+                                <![CDATA[DELETE FROM crm_order_detail_sum WHERE detailsum_ckdh = {id}]]>
+                            </value>
+                        </property>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

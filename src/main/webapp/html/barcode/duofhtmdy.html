@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>批量发货条码打印</title>
+<link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.css">
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script src="../../lib/bootstrap/js/bootstrap.js"></script>
+<script src="../../js/common.js" ></script>
+</head>
+<body>
+   <div class="panel panel-success" style="width:80%; margin:5% auto; min-width:740px; max-width:800px;">
+    <div class="panel-heading">
+        <h3 class="panel-title">批量发货条码打印</h3>
+    </div>
+    <div class="panel-body">
+         <div class="form-group">
+            <label class="col-sm-2 control-label">生产编号：</label>
+            <div class="col-sm-3">
+               <input name="sctm" id="sctm" class="form-control input-sm"  placeholder="输入生产编号..." maxlength="12" ondblclick="this.value=''"/>
+            </div>
+            <label class="col-sm-2 control-label">打印份数：</label>
+            <div class="col-sm-3">
+                <input type="text" name="dyfs" id="dyfs"  value = "1" class="form-control input-sm" placeholder="输入打印份数..." />
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-primary btn-lg" onclick="printbarcode()" >打印</button>
+            </div>
+         </div>
+        </div>
+    <div style="background-color:#C1D7E3; width: 60%; margin-left: 20%;margin-right: 20%;">
+    <table class="table">
+        <tr>
+            <th colspan="4" height="50px"><span style="font-size:28px;" id="khbh"></span></th>
+        </tr>
+        <tr>
+            <td width="25%" align="right"><span style="font-size:18px;font-weight:bold;">Finish：</span></td>
+            <td colspan="3"><span id="finish"></span></td>
+        </tr>
+        <tr>
+            <td width="25%" align="right"><span style="font-size:18px;font-weight:bold;">Size：</span></td>
+            <td> <span style="font-size:18px;" id="size"></span></td>
+            <td width="25%" align="right"><span style="font-size:18px;font-weight:bold;">PCD：</span></td>
+            <td>
+                <span style="font-size:18px;"id="pcd"></span>
+            </td>
+        </tr>
+        <tr>
+            <td align="right"><span style="font-size:18px;font-weight:bold;">Offset：</span></td>
+            <td><span style="font-size:18px;" id="offset"></span></td>
+            <td align="right"><span style="font-size:18px;font-weight:bold;">Date：</span></td>
+            <td>
+                <span style="font-size:18px;" id="date"></span>
+            </td>
+        </tr>
+        <tr>
+            <td align="right"><span style="font-size:18px;font-weight:bold;">Hub：</span></td>
+            <td><span style="font-size:18px;" id="hub"></span></td>
+            <td align="right"><span style="font-size:18px;font-weight:bold;">客户UPC：</span></td>
+            <td>
+                <span style="font-size:18px;" id="upc"></span>
+            </td>
+        </tr>
+          <tr>
+            <td width="25%" align="right"><span style="font-size:18px;font-weight:bold;">标签类型：</span></td>
+            <td>
+                <span style="font-size:18px;"id="bqbh"></span>
+            </td>
+             <td align="right"><span style="font-size:18px;font-weight:bold;">生产编号：</span></td>
+            <td><span style="font-size:18px;" id="scbh"></span></td>
+        </tr>
+    </table>
+</div>
+</div>
+<object id="SNBCActiveX" classid="clsid:D82D4A6C-3C77-4FB5-A945-F469E973C49C" 
+         codebase="SNBCActiveX.CAB#version=1,0,1" style="display: none;">
+</object>
+    <script type="text/javascript" language="javascript">
+    $('#sctm').focus();
+          function printbarcode(){
+          var regu = /^[1-9]\d*$/;
+          var activeX = document.getElementById("SNBCActiveX");
+          var sctm=$("#sctm").val();
+          var dyfs=$("#dyfs").val();
+          if(dyfs==''||dyfs=='undefined'){
+        	  dyfs = 1;
+          }else{
+        	  if (!regu.test(dyfs)) {
+        		  alert("请输入正整数！");
+        	  }
+          }
+          var date=getnowtime();
+          if(sctm!=''&&sctm!=null){
+        	  $("#scbh").html(sctm);
+        ajaxSubmitGet("../../tmwh/printBarcode/"+sctm, function(data) {
+    		  var barcode_data = data['data'];
+ 	         var khbh=barcode_data.barcode_khbh;
+ 	         if(typeof(khbh)=="undefined"){ 
+ 	        	alert("生产编号在基础数据中不存在，请先维护条码基础数据！");
+ 	 	         return false;
+ 	         }
+ 	          var upc=barcode_data.barcode_upc;
+ 	          var finish=barcode_data.barcode_bmztyw;
+ 	          var size=barcode_data.barcode_gg;
+ 	          var pcd=barcode_data.barcode_pcd;
+ 	          var offset=barcode_data.barcode_pj;
+ 	          var hub=barcode_data.barcode_zxk;
+ 	          var bqbh=barcode_data.barcode_bqbh;
+ 	         $("#khbh").html(khbh); 
+ 	          $("#upc").html(upc); 
+ 	          $("#finish").html(finish); 
+ 	          $("#size").html(size);
+ 	          $("#pcd").html(pcd);
+ 	          $("#offset").html(offset);
+ 	          $("#hub").html(hub);
+ 	          $("#date").html(date);
+ 	         $("#bqbh").html(bqbh);
+ 	          activeX.PrintBigBarCodeBqbh(khbh,upc,sctm,finish,size,pcd,offset,date,hub,bqbh,dyfs);
+ 	 	   },null,false);
+          }else{
+          }
+         }
+          $(document).keyup(function (e) {//捕获文档对象的按键弹起事件  
+      	    if (e.keyCode == 13) {//按键信息对象以参数的形式传递进来了  
+      	    	printbarcode();
+      	    }  
+      	}); 
+    </script>
+</body>
+</html>

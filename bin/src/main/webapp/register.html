@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>注册</title>
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="lib/echarts/css/signin.css" rel="stylesheet">
+    <link href="lib/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="lib/jquery/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="lib/bootstrap-toastr/toastr.min.js"></script>
+    <script type="text/javascript" src="js/common.js" ></script>
+	<script type="text/javascript" src="lib/md5.js"></script>
+	<script type="text/javascript">
+		function reset(){
+			 $("#register_form").find(".form-control").val("");
+		}
+		function register(){
+			if(!checkpasswd()){return;}
+			if(checkName()) return;
+			 var param = {};
+	 		 param.code=$("#email").val();
+	 		 param.account=$("#email").val();
+	 		 param.name = $("#username").val();
+	 		 param.orgid= '';
+	 		 param.passwd = hex_md5($("#passwd").val()).toUpperCase();
+	 		 param.status ='1';
+	 		 param.description='';
+	 		 param.email=$("#email").val();
+	 		 param.deptname=$("#deptname").val();
+	 		var data = JSON.stringify(param);
+		     ajaxSubmit("/heatflowchart/register", data, function(data) {
+	 		        if (data) {
+	 		            if (parseInt(data['status']) > 0) {
+	 		            	 toastr.success('注册成功!');
+	 		            	 window.location = "login.html"
+	 		            } else if (parseInt(data['status']) == -1) {
+	 		            	toastr.error('账号[' + $("#email").val() + ']已存在,不能重复注册！');
+	 		            } else {
+	 		            	toastr.error('注册发生异常，请联系网站管理员！');
+	 		            }
+	 		        }
+	 		    });	
+		}
+		function checkName(){
+			var flag = false;
+			 $.ajax({
+		            type: "POST",
+		            url: "rbac/cmUser?method=getUserName",
+		            data: "uname=" + $('#email').val(),
+		            async:false,
+		            dataType: "json",
+		            contentType: "application/json; charset=utf-8",
+		            success: function(data) {
+		                if(data["valid"]=="true"){
+		                	toastr.error('此邮箱已注册！');
+		                	flag =  true;
+		                } else {
+		                }
+		            },
+		            error: function(XMLResponse){
+		            }
+		        });
+			 return flag;
+		}
+	function checkpasswd(){
+		var pswd = $("#passwd").val();
+		var pswd1 = $("#passwd1").val();
+		if($("#email").val()===''){
+			alert("邮箱不能为空！");
+			$("#email").focus();
+			return false;
+		}
+		if($("#username").val()===''){
+			alert("姓名不能为空！");
+			$("#username").focus();
+			return false;
+		}
+		if($("#deptname").val()===''){
+			alert("单位不能为空！");
+			$("#deptname").focus();
+			return false;
+		}
+		if($("#passwd").val()===''){
+			alert("请输入密码！");
+			$("#passwd").focus();
+			return false;
+		}
+		if($("#passwd1").val()===''){
+			alert("请输入密码！");
+			$("#passwd1").focus();
+			return false;
+		}
+		var myreg = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+		if(!myreg.test($("#email").val()))
+			{
+			alert('请输入有效的email！');
+			$("#email").focus();
+			return false;
+		}
+		if(pswd!=pswd1){
+			alert("两次输入密码不一致！");
+			return false;
+		}
+		return true;
+	}
+	
+	</script>
+  </head>
+
+  <body>
+    <div class="container">
+      <form class="form-signin" id="register_form"  method="post" >
+        <h3 class="form-signin-heading">请填写注册信息：</h3>
+        <input type="email" id="email" class="form-control" placeholder="邮箱（用户名）" required onblur="checkName()">
+        <input type="password" id="passwd" class="form-control" placeholder="密码" required>
+        <input type="password" id="passwd1" class="form-control" placeholder="确认密码" required>
+        <input type="username" id="username" class="form-control" placeholder="姓名" required >
+        <input type="company" id="deptname" class="form-control" placeholder="单位" required >
+        <button class="btn btn-lg btn-primary btn-block" type="button" onclick="register()">注册</button>
+      </form>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8">
+    <title>用户管理</title>
+    <link href="../../lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-table/bootstrap-table.css" rel="stylesheet" />
+    <link href="../../lib/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/Aqua/css/ligerui-all.css" />
+    <link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/ligerui-icons.css" />
+    <script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../lib/ligerUI/js/ligerui.all.js" ></script>
+    <script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/bootstrap-table.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-toastr/toastr.min.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-validation/messages_cn.js"></script>
+    <script type="text/javascript" src="../../lib/bootstrap-toastr/ewin.js"></script>
+    <script type="text/javascript" src="../../js/common.js" ></script>
+    <script type="text/javascript" src="../../lib/md5.js"></script>
+    <script type="text/javascript">
+    var paramS = new Object();
+    var opt;
+    $(function () {
+    	initTable();
+    	ButtonInit();
+    });
+    
+   function initTable(){
+	  $('#usergrid').bootstrapTable({
+           url: '../../system/query',         //请求后台的URL（*）
+           method: 'post',                      //请求方式（*）
+           toolbar: '#toolbar',                //工具按钮用哪个容器
+           striped: true,                      //是否显示行间隔色
+           cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+           pagination: true,                   //是否显示分页（*）
+           sortable: false,                     //是否启用排序
+           sortOrder: "asc",                   //排序方式
+           queryParams: queryParams,          //传递参数（*）
+           showHeader:true,
+           showColumns:false,
+           queryParamsType:'page',
+           sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+           pageNumber:1,                       //初始化加载第一页，默认第一页
+           pageSize: 5,                       //每页的记录行数（*）
+           pageList: [5, 10, 50, 100],        //可供选择的每页的行数（*）
+           search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+           strictSearch: false,
+           height:460,
+           showColumns: false,                  //是否显示所有的列
+           showRefresh: false,                  //是否显示刷新按钮
+           minimumCountColumns: 2,             //最少允许的列数
+           clickToSelect: true,                //是否启用点击选中行
+           singleSelect: true,
+           uniqueId: "id",           //每一行的唯一标识，一般为主键列
+           showToggle:false,                    //是否显示详细视图和列表视图的切换按钮
+           cardView:  false,                    //是否显示详细视图
+           detailView: false,                   //是否显示父子表
+           columns: [{radio: true},
+                     {field: 'id',title: 'id',visible:false,halign:'center',valign:'middle'}, 
+                     {field: 'code',title: 'code',visible:false,halign:'center',valign:'middle'}, 
+                     {field: 'orgid',title: 'orgid',visible:false,halign:'center',valign:'middle'}, 
+                     {field: 'account', title: '账号',halign:'center',valign:'middle'},
+           	         {field: 'name', title: '用户名称',halign:'center',valign:'middle'},
+           	         {field: 'deptname', title: '单位名称',halign:'center',valign:'middle'},
+                     {field: 'email',title: '邮箱',halign:'center',valign:'middle'}, 
+                     {field: 'status', title: '状态',halign:'center',valign:'middle'},
+                     {field: 'description', title: '说明',halign:'center',valign:'middle'},
+                     {field: 'operate',title: '操作',align: 'center',valign: 'middle',
+          				 formatter: operateFormatter,
+            			 events: operateEvents},
+           ]
+       });
+   }
+ function queryParams(params) {
+         var temp = {
+                 ps: params.pageSize,   //页面大小
+                 cp: params.pageNumber,  //页码
+                 p: true,
+                 data:paramS,
+                 sql:'system.select.queryUser',
+             };
+             return temp;
+         }
+ function operateFormatter(value, row, index) {
+	 if(row.id==='000001'){
+		 return [''].join('');
+	 }
+     return ['<a class="edit btn btn-xs btn-default btn-primary" style="margin-left:10px" href="javascript:void(0)" title="编辑">',
+                             '<i class="icon-pencil">编辑</i>',
+              '</a>',
+               '<a class="remove btn btn-xs btn-default btn-primary" style="margin-left:10px" href="javascript:void(0)" title="移除">',
+                             '<i class="icon-remove">移除</i>',
+               '</a>'
+             ].join('');
+ }
+
+ window.operateEvents = {
+     'click .edit': function (e, value, row, index) {
+    	 $("#modaltitle").text("修改用户");
+ 		 opt='update';
+ 		 $("#adduser_modal").find(".form-control").val("");
+ 		  $("#id").val(row.id);
+ 	      $("#account").val(row.account);
+		  $("#name").val(row.name);
+		  $("#status").val(row.status);
+		  $("#description").val(row.description);
+		  $("#email").val(row.email);
+		  $("#deptname").val(row.deptname);
+ 		$('#adduser_modal').modal('show');
+     },
+     'click .remove': function (e, value, row, index) {
+    		Ewin.confirm({ message: "确认要删除选择的数据吗？" }).on(function (e) {
+   				if (!e) {
+   				 return;
+   				}
+   			   var data = JSON.stringify(reqJson('system.delete.delUser',row));
+   		       ajaxSubmit("../../system/del", data, function(data) {
+   		        if (data) {
+   		            if (parseInt(data['status']) > 0) {
+   		               toastr.success('删除成功!');
+		                toQuery();
+   		            } else {
+   		            	toastr.error('删除失败');
+   		            }
+   		        }
+   		       });
+   			});
+     }
+ }
+ function ButtonInit(){
+     //新增
+ 	$('#btn_add').bind('click', function() {
+ 		 $("#modaltitle").text("新增用户");
+ 		 opt='add';
+ 		 $("#adduser_modal").find(".form-control").val("");
+ 		$('#adduser_modal').modal('show');
+		});
+    //权限
+ 	$('#btn_role').bind('click', function() {
+ 		var arrselections = $("#usergrid").bootstrapTable('getSelections');
+ 		var userid = arrselections[0].id;
+ 		if(userid==='000001'){
+ 			toastr.info('不允许修改系统预留用户的权限！');
+ 			return;
+		 }
+ 	   $.ligerDialog.open ({ height: 300,width:450, title:'角色资源设置',url: './user_role_manager.html?userid='+userid+'', isResize:true  });
+		});
+ 	$("#btn_submit").click(function () {
+ 		 var param = {};
+ 		    param.id=$("#id").val();
+ 		    param.code=$("#account").val();
+ 		    param.account=$("#account").val();
+ 		    param.name = $("#name").val();
+ 		    param.orgid= '';
+ 		    param.passwd = hex_md5($("#passwd").val()).toUpperCase();
+ 		    param.status = $("#status").val();
+ 		    param.description=$("#description").val();
+ 		    param.email=$("#email").val();
+ 		    param.deptname=$("#deptname").val();
+ 		    if(opt==='add'){
+ 		       var data = JSON.stringify(reqJson('system.add.addUser',JSON.stringify(param)));
+ 	 		    ajaxSubmit("../../system/add", data, function(data) {
+ 	 		        if (data) {
+ 	 		            if (parseInt(data['status']) > 0) {
+ 	 		            	 toastr.success('信息保存成功!');
+ 	 						$("#adduser_modal").modal("hide")
+ 	 		                toQuery();
+ 	 		            } else if (parseInt(data['status']) == -1) {
+ 	 		            	toastr.error('用户[' + $("#name").val() + ']已存在<br>不能重复添加','错误');
+ 	 		            } else {
+ 	 		            	toastr.error('保存失败');
+ 	 		            }
+ 	 		        }
+ 	 		    });	
+ 		    }else{
+ 		       var data = JSON.stringify(reqJson('system.update.updateUser',JSON.stringify(param)));
+	 		    ajaxSubmit("../../system/update", data, function(data) {
+	 		    	if (data) {
+	 		            if (parseInt(data['status']) > 0) {
+	 		            	toastr.success('保存成功');
+	 		            	$("#adduser_modal").modal("hide")
+	 		                toQuery();
+	 		            } else {
+	 		            	toastr.error('保存失败');
+	 		            }
+	 		        }
+	 		    });	
+ 		    }
+ 	});
+ 		    
+ }
+	//查询
+	function toQuery(){
+		paramS.account = $("#Search_account").val();
+		paramS.name = $("#Search_name").val();
+		paramS.status = $("#Search_status").val();
+     $("#usergrid").bootstrapTable('refresh');
+	}
+    </script>
+    <style>
+        .col-sm-1 {
+            width: 10%;
+        }
+        .col-sm-2 {
+            width: 20%;
+        }
+        .col-sm-10 {
+            width: 80%;
+        }
+       .col-sm-4 {
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+	<nav class="navbar navbar-default" style="margin-bottom: 0px">
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <form class="navbar-form navbar-left" id="searchFrom" role="search">
+		      <div class="form-group">
+				用户账号：
+				</div>
+				<div class="form-group">
+			    	<input type="text" id="Search_account"  name="Search_account"  class="form-control" style="width: 120px;" placeholder="账号">
+				</div>
+				<div class="form-group">
+				用户名：
+				</div>
+				<div class="form-group">
+			    	<input type="text" id="Search_name" name="Search_name"  class="form-control" style="width: 120px;" placeholder="用户名">
+				</div>
+				<div class="form-group">
+				状态：
+				</div>
+	          	<div class="form-group">
+		          	<select class="form-control" id="Search_status" id="Search_status" >
+						<option value="">全部</option>
+				    	<option value="1">启用</option>
+				    	<option value="0">停用</option>
+					</select>
+				</div>
+				<div class="form-group">	
+			        <input id="btn_query" type="button" onclick="toQuery()" class="btn btn-primary" value="查询">
+			    </div>
+		      	
+		      </form>
+		    </div>
+		</nav>
+	 <div id="tablediv" style="width: 99%">
+		<div id="toolbar" class="btn-group">
+			<button id="btn_add" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+			</button>
+			<button id="btn_role" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-user" aria-hidden="true"></span>权限
+			</button>
+		</div>
+		<table id="usergrid"></table>
+	</div>
+	 <div id="adduser_modal" class="modal fade">
+        <div class="modal-dialog modal-full">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 id="modaltitle" class="modal-title"></h4>
+                </div>
+                <form class="form-horizontal form-bordered form-row-strippe" id="ffAdd" action="" data-toggle="validator" enctype="multipart/form-data">
+                <div class="modal-body">
+                  <input name="id" id="id" type="hidden"/>
+                 <div class="form-group">
+				       <label class="col-sm-2 control-label">账号：</label>
+				       <div class="col-sm-8">
+						  <input name="account" id="account" class="form-control input-sm"  placeholder="账号" />
+				       </div>
+                  </div>
+                 <div class="form-group">
+				       <label class="col-sm-2 control-label">邮箱：</label>
+				       <div class="col-sm-8">
+						  <input name="email" id="email" type="email" class="form-control input-sm"  placeholder="邮箱" />
+				       </div>
+                  </div>
+                    <div class="form-group">
+				       <label class="col-sm-2 control-label">姓名：</label>
+				       <div class="col-sm-8">
+						  <input name="name" id="name" class="form-control input-sm"  placeholder="姓名" />
+				       </div>
+                  </div>
+                    <div class="form-group">
+				       <label class="col-sm-2 control-label">单位：</label>
+				       <div class="col-sm-8">
+						  <input name="deptname" id="deptname" class="form-control input-sm"  placeholder="单位" />
+				       </div>
+                  </div>
+                    <div class="form-group">
+						<label class="col-sm-2 control-label">用户状态：</label>
+						<div class="col-sm-3">
+						<select name="status" id="status" class="form-control input-sm">
+							<option value="1">启用</option>
+							<option value="0">停用</option>
+						</select>
+					</div>
+				   </div>
+				   <div class="form-group">
+				       <label class="col-sm-2 control-label">密码：</label>
+				       <div class="col-sm-8">
+						  <input name="passwd" id="passwd" type="password" class="form-control input-sm"  placeholder="密码" />
+				       </div>
+                  </div>
+                  <div class="form-group">
+				       <label class="col-sm-2 control-label">确认密码：</label>
+				       <div class="col-sm-8">
+						  <input name="passwd1" id="passwd1" type="password" class="form-control input-sm"  placeholder="确认密码" />
+				       </div>
+                  </div>
+                  <div class="form-group">
+				       <label class="col-sm-2 control-label">备注：</label>
+				       <div class="col-sm-8">
+						  <input name="description" id="description" class="form-control input-sm"  placeholder="备注" />
+				       </div>
+                  </div>
+                </div>
+                <div class="modal-footer bg-info">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button id="btn_submit" type="button" class="btn btn-primary submit">保存</button>
+                </div>
+             </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</body>
+</html>

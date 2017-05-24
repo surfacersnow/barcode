@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>机构维护</title>
+<link rel="stylesheet" type="text/css" href="../../css/cm-default.css" />
+<link rel="stylesheet" type="text/css" href="../../css/main.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/Aqua/css/ligerui-all.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/ligerUI/skins/ligerui-icons.css" />
+<link rel="stylesheet" type="text/css" href="../../lib/bootstrap/css/bootstrap.css"/>
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="../../lib/ligerUI/js/ligerui.all.js" ></script>
+<script type="text/javascript" src="../../js/common.js" ></script>
+<script type="text/javascript" src="../../lib/autoInput/AutoInput.js" ></script>
+<script type="text/javascript" src="../../js/pub.js"></script>
+<script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js" ></script>
+<script type="text/javascript" src="../../lib/md5.js"></script>
+<script type="text/javascript">
+var defGrid;
+var userid;
+$(function(){
+    defGrid = $("#query_list").ligerGrid({
+        columns:[
+            {display:'操作',isSort:false,width:60,render:function(rowdata,rowindex,value) {
+                var h = "";
+                if (!rowdata._editing) {
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='beginEdit(" + rowindex + ")'>修改</a> ";
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='deleteRow(" + rowindex + ")'>删除</a> ";
+                } else {
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='endEdit(" + rowindex + ")'>提交</a> ";
+                    h += "<a href='javascript:void(0);' class='opt-link' onclick='cancelEdit(" + rowindex + ")'>取消</a> ";
+                }
+                return h;
+            }},
+            {display:'编号',name:'code',width:80,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'名称',name:'name',width:80,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'简称',name:'shortfor',width:100,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'地址',name:'address',width:60,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'联系电话',name:'tel',width:60,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'传真',name:'fax',width:60,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'邮编',name:'zipcode',width:60,minWidth:60,align:'left',editor:{type:'text'}},
+            {display:'状态',name:'status',width:70,data:status,render:switcher,editor:{type:'select',data:getStatus,textField:'name',valueField:'value',selectBoxHeight:50}},
+            {display:'说明',name:'description',width:200,align:'left',editor:{type:'text'}}
+        ],
+        pageSize:10,
+        usePager: true,
+        sortName:'id',
+        width:'100%',
+        height:'100%',
+        dataAction:'server',
+        checkbox:false,
+        rownumbers:false,
+        fixedCellHeight:false,
+        colDraggable:true,
+        enabledEdit:true,
+        clickToEdit:false,
+        onSelectRow:function(rowdata, rowindex){$("#txtrowindex").val(rowindex);},
+        sqlid:"rbac.select.def.queryOrg",
+        url: '../../comm/q',
+        contentType : "application/json; charset=utf-8",
+        param_status:'rbac.status',
+        param_org_type:'rbac.org_type',
+        param_org:'org_list'
+    });
+    $("#pageloading").hide();
+
+    $("#org_comboboxS").ligerComboBox({
+        autocomplete: true,
+        valueField:'value',
+        textField:'name',
+        data:get_org_list,
+        onSelected:function(v,t) {
+            $("#Higher_ID").val(v);
+        }
+    });
+    $("#orgType_comboboxS").ligerComboBox({
+        autocomplete: true,
+        valueField:'value',
+        textField:'name',
+        data:get_org_type,
+        onSelected:function(v,t) {
+            $("#newOrgType").val(v);
+        }
+    });
+
+    var moveInBox = $("#newStatuNameS").ligerComboBox({
+        autocomplete: true,
+        valueField:'value',
+        textField:'name',
+        data:getStatus,
+        onSelected:function(v,t) {
+            $("#newStatus").val(v);
+        }
+    });
+});
+var getStatus = new function () {
+    return getData('rbac.status');
+}
+function beginEdit(rowid) {
+    defGrid.beginEdit(rowid);
+}
+function cancelEdit(rowid) {
+    defGrid.cancelEdit(rowid);
+}
+function endEdit(rowid) {
+    defGrid.endEdit(rowid);
+    var row = defGrid.getRow(rowid);
+    toModify(JSON.stringify(row));
+}
+function deleteRow(rowid) {
+    $.ligerDialog.confirm('您确定要删除该项数据吗？', function(r) {
+        if (!r)
+            return;
+        var row = defGrid.getRow(rowid);
+        if (row['__status'] !== 'add')
+            toDel(JSON.stringify(row));
+        defGrid.deleteRow(rowid);
+    })
+}
+function switcher(item) {
+    return paramRender(item, defGrid.options.param_status, item.status);
+}
+var getStatus = new function () {
+    return getData('rbac.status');
+}
+function switcher_org_type(item) {
+    return paramRender(item, defGrid.options.param_org_type, item.org_type);
+}
+function switcher_org(item) {
+    return paramRender(item, defGrid.options.param_org, item.higher_id);
+}
+var get_org_list=new function () {
+    return getData('org_list');
+}
+
+var get_org_type = new function () {
+    return getData('rbac.org_type');
+}
+
+
+function toQuery(item, page, pageSize) {
+    var param = new Object();
+    param.name = $("#orgname").val();
+    param.shortfor=$("#SHORTFOR").val();
+    // l-list 线性结构，默认；t-tree 树型结构
+    param.rt='l';
+    //重置页码
+    defGrid.set({
+        page : 1,
+        newPage : 1,
+        postData : param
+    });
+    // grid 重新加载数据
+    defGrid.loadData();
+}
+var addDialog;
+function openDictDef() {
+    toReset('#new_dict_def input,select,textarea');
+    addDialog = $.ligerDialog.open({
+        target:$("#new_dict_def"),
+        title:"新增机构",
+        width:600,
+        height:360
+    });
+}
+function validate() {
+    var valid = true;
+    $('*[id$="S"],*[id$="S_txt"]').each(function(index, element) {
+
+        if (!$(this).rules()) return;
+        if (!$(element).valid()) {
+            valid = false;
+            return;
+        }
+    });
+    if (!valid) return false;
+    return true
+}
+
+function toAdd() {
+    var param = new Object();
+    param.name = $("#newNameS").val();
+    param.code = $("#newCodeS").val();
+    param.shortfor = $("#newShortforS").val();
+    param.org_type = $("#newOrgType").val();
+    param.Higher_ID=$("#Higher_ID").val();
+    param.address=$("#newAddress").val();
+    param.tel = $("#newTel").val();
+    param.fax=$("#newFax").val();
+    param.zipcode = $("#newZipcdoe").val();
+    param.status = $("#newStatus").val();
+    param.desc=$("#newDesc").val();
+    var data = JSON.stringify(reqJson("rbac.add.def.addOrg",JSON.stringify(param)));
+
+    $("#save").attr({"disabled":"disabled"});
+
+    ajaxSubmit("../../comm/a", data, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('保存成功', '操作完成', function() {
+                    $("#save").removeAttr("disabled");
+                    addDialog.hide();
+                    toQuery();
+                });
+            } else if (parseInt(data['status']) == -1) {
+                $.ligerDialog.error('机构[' + $("#newName").val() + ']已存在<br>不能重复添加','错误');
+            } else {
+                $.ligerDialog.error('保存失败');
+            }
+        }
+    },null,false);
+}
+function toModify(row) {
+    var data = JSON.stringify(reqJson("rbac.update.def.updateOrg",row));
+    ajaxSubmit("../../comm/u", data, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('保存成功');
+            } else {
+                $.ligerDialog.error('保存失败');
+            }
+        }
+    });
+}
+function toDel(row) {
+    var param = JSON.stringify(reqJson('rbac.delete.def.deleteorg',row));
+    ajaxSubmit("../../comm/d", param, function(data) {
+        if (data) {
+            if (parseInt(data['status']) > 0) {
+                $.ligerDialog.success('删除成功');
+            } else {
+                $.ligerDialog.error('删除失败');
+            }
+        }
+    });
+}
+</script>
+<style type="text/css">
+.label-div {width:18%;height:25px;position:relative;float:left;padding:5px 0 0 0;}
+.in-div {width:32%;height:25px;position:relative;float:left;padding: 5px 0 0 0;}
+</style>
+
+</head>
+<body style="padding:0;">
+<div id="pageloading"></div>
+<div id="layout_main">
+    <div position="center" id="a_center" title="机构列表">
+        <div id="query_cond" class="fields">
+        	<div style="padding-left:15px;padding-top:5px;">
+ 			<button type="button" onclick="openDictDef();" class="btn btn-primary btn-xs ">
+   				&nbsp;<span class="glyphicon glyphicon-plus">新增</span>
+    		</button>
+   			</div>
+   			
+            <label>名称</label><input type="text" class="s-text txt-def" id="orgname" />
+            <label>简称</label><input type="text" class="s-text txt-def" id="SHORTFOR" />
+            <button type="button" style="margin-left:25px;" onclick="toQuery();" class="form_Button btn btn-primary btn-xs">查询</button>
+    		<button type="button" onclick="toReset('#up_dict_pw input,select,textarea')" class="form_Button btn btn-primary btn-xs">清空</button>
+        </div>
+        <div id="query_list"></div>
+    </div>
+</div>
+<div id="new_dict_def" style="display:none;overflow:hidden;">
+    <form name="basic-form" method="post" id="basic_form" class="liger-form" data-validate="{}">
+        <div class="line-div">
+            <div class="label-div"><label>编号</label></div>
+            <div class="in-div"><input type="text" ltype="text" class="required s-text txt-def" id="newCodeS" /></div>
+
+            <div class="label-div"><label>名称</label></div>
+            <div class="in-div"><input type="text" ltype="text" class="required s-text txt-def" id="newNameS" /></div>
+        </div>
+        <div class="line-div">
+            <div class="label-div"><label>简称</label></div>
+            <div class="in-div"><input type="text" ltype="text" class="required s-text txt-def" id="newShortforS" /></div>
+
+            <div class="label-div"><label>机构类型</label></div>
+            <!--  <div class="in-div"><select class="txt-def" id="newOrgType" param="rbac.org_type" default="0" style="margin-right: 30px;"></select></div>
+            -->
+            <div class="in-div"><input type="text" id="orgType_comboboxS" ltype="combobox" class="required diff" /></div>
+            <input type="hidden" id="newOrgType" />
+        </div>
+        <div class="line-div">
+            <div class="label-div"><label>所属机构</label></div>
+            <div class="in-div"><input type="text" id="org_comboboxS" ltype="combobox" class="required s-text txt-def"  /></div>
+            <input type="hidden" id="Higher_ID" />
+
+
+            <div class="label-div"><label>地址</label></div>
+            <div class="in-div"><input type="text" class="s-text txt-def" id="newAddress" /></div>
+        </div>
+        <div class="line-div">
+            <div class="label-div"><label>电话</label></div>
+            <div class="in-div"><input type="text" class="s-text txt-def" id="newTel" /></div>
+
+            <div class="label-div"><label>传真</label></div>
+            <div class="in-div"><input type="text" class="s-text txt-def" id="newFax" /></div>
+        </div>
+
+        <div class="line-div">
+            <div class="label-div"><label>邮编</label></div>
+            <div class="in-div"><input type="text" class="s-text txt-def" id="newZipcdoe" /></div>
+
+            <div class="label-div"><label>状态</label></div>
+            <div class="in-div">
+                <input type="text" id="newStatuNameS" ltype="combobox" class="required s-text txt-def" /></div>
+            <input type="hidden" id="newStatus" />
+        </div>
+        <div class="line-div">
+            <div class="label-div"><label>说明</label></div>
+            <div class="in-div"><textarea cols="30" rows="3" id="newDesc"></textarea></div>
+        </div>
+
+        <div class="line-div" style="margin-top:45px;padding-left:40%;">
+            <button type="button" onclick="toAdd();" class="form_Button btn btn-primary btn-xs">保存</button>
+            <button type="button" onclick="toReset('#up_dict_pw input,select,textarea')" class="form_Button btn btn-primary btn-xs">清空</button>
+
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

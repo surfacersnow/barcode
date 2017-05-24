@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+<meta http-equiv="X-UA-Compatible" content="IE=9" />
+<meta name="renderer" content="webkit">
+<title>XXX System</title>
+<link type="text/css" rel="stylesheet" href="css/cm-default.css" />
+<!-- <link type="text/css" rel="stylesheet" href="lib/ligerUI/skins/Aqua/css/ligerui-all.css" /> -->
+<link type="text/css" rel="stylesheet"
+	href="lib/ligerUI/skins/Gray2014Customer/css/all.css" />
+<link type="text/css" rel="stylesheet" href="css/main.css" />
+
+<link rel="stylesheet" href="lib/bootstrap//css/bootstrap.css">
+<link type="text/css" rel="stylesheet" href="css/pub.css" />
+
+<script type="text/javascript" src="lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="lib/ligerUI/js/ligerui.min.js"></script>
+
+<script type="text/javascript" src="lib/bootstrap/js/bootstrap.js"></script>
+<!--解决IE实现对媒体查询（media query）的支持-->
+<!--[if lt IE 9]>
+	<script type="text/javascript" src="lib/ie/respond.src.js"></script>
+	<![endif]-->
+<script type="text/javascript" src="js/pub.js"></script>
+
+<script type="text/javascript">
+	var tabManager = null;
+	var accordion = null;
+	var tree = null;
+	$(function() {
+		/*初始化中部内容的高度*/
+		$("#contentBody").height(
+				$(window).outerHeight() - $("#contentNav").outerHeight());
+		//布局
+		//$("#layout_main").ligerLayout({leftWidth:190,height:'100%',with:'100%',heightDiff:-5,space:4,onHeightChanged:f_heightChanged});
+		//var height = $(".l-layout-center").height();
+		$("#framecenter").ligerTab({
+			height : '100%',
+			contextmenu : true
+		}); //Tab
+		//$("#accordion_left").ligerAccordion({height:height-24,speed:null});
+
+		tabManager = $("#framecenter").ligerGetTabManager();
+		//accordion = $("#accordion_left").ligerGetAccordionManager();
+
+		var tree = $("#tree1").ligerTree(
+				{
+					url : "rbac/cmUser?method=menu",
+					checkbox : false,
+					topParentIDValue : 1,
+					idFieldName : 'id',
+					slide : false,
+					isExpand : false,
+					parentIDFieldName : 'pid',
+					btnClickToToggleOnly : false,
+					onSelect : function(node) {
+						if (!node.data.url)
+							return;
+						var tabid = $(node.target).attr("tabid");
+						if (!tabid) {
+							tabid = new Date().getTime();
+							$(node.target).attr("tabid", tabid)
+						}
+						f_addTab(tabid, node.data.text,
+								decodeURIComponent(node.data.url));
+					},
+					onError : function() {
+						alert("error");
+					}
+				});
+		//treeManager = $("#tree1").ligerGetTreeManager();
+		//treeManager.collapseAll();
+
+		//$("#pageloading").hide();
+		//ldz 左侧收起列表
+		$("#openOrHidden").mouseover(function() {
+			$("#open_icon").fadeIn('1000');
+		});
+		$("#openOrHidden").mouseleave(function() {
+			$("#open_icon").fadeOut('1000');
+		});
+		$("#openOrHiddenReverse").mouseover(function() {
+			$("#open_icon_reverse").fadeIn('1000');
+		});
+		$("#openOrHiddenReverse").mouseleave(function() {
+			$("#open_icon_reverse").fadeOut('1000');
+		});
+		$("#open_icon").click(function() {
+			$("#openOrHiddenReverse").css("display", "block");
+			$("#left_content").css("display", "none");
+			$("#main_content").removeClass("col-md-10").addClass("col-md-12");
+		});
+		$("#open_icon_reverse").click(function() {
+			$("#openOrHiddenReverse").css("display", "none");
+			$("#left_content").css("display", "block");
+			$("#main_content").removeClass("col-md-12").addClass("col-md-10");
+		});
+	});
+	$.ajax({
+		url : "rbac/cmUser?method=getUserInfo",
+		type : "POST",
+		dataType : "json",
+		contentType : "application/json; charset=utf-8",
+		success : function(data) {
+			if (data["status"] === "1")
+				$("#unameA").text(data["uname"]);
+		},
+		error : function(data) {
+			alert("error");
+		}
+	});
+	/*function f_heightChanged(options) {
+	    if (tabManager) tabManager.addHeight(options.diff);
+	    if (accordion && options.middleHeight - 24 > 0)
+	        accordion.setHeight(options.middleHeight - 24);
+	}*/
+	function f_addTab(tabid, text, url) {
+		tabManager.addTabItem({
+			tabid : tabid,
+			text : text,
+			url : url
+		});
+	}
+	//ldz 定义导航菜单 start
+	function setNav(list) {
+		var navList = [];
+		for ( var i in list) {
+			var flag = true;
+			for ( var j in list) {
+				if (list[i].pid == list[j].id) {
+					flag = false;
+				}
+			}
+			if (flag) {
+				navList.push(list[i]);
+			}
+		}
+		setNavHtml(navList);
+	}
+	function setNavHtml(navList) {
+		var line = '';
+		for ( var i in navList) {
+			if (i == 0) {
+				line += '<li class="active"><a href="javascript:;" id="'
+						+ navList[i].id + '" onclick="setLeft(this)">'
+						+ navList[i].text + '</a></li>';
+			} else {
+				line += '<li><a href="javascript:;" id="' + navList[i].id
+						+ '" onclick="setLeft(this)">' + navList[i].text
+						+ '</a></li>';
+			}
+		}
+		$("#navMenu").html(line);
+	}
+	//ldz 定义导航菜单 end
+	//ldz 定义左侧菜单 start
+	var dataList = [];
+	var addList = [];
+	var row = $("<ul></ul>");
+	var telrow = null;
+	//触发左侧菜单
+	function setLeft(obj) {
+		$(obj).parents("ul").find("li").removeClass("active");
+		$(obj).parent().addClass("active");
+		var id = obj.id;
+		row.find("li").each(function() {
+			if (id == $(this).attr("pid")) {
+				$("#tree").html($(this).parent().html());
+			}
+		});
+	}
+	function setLeftMenu(list) {
+		outer: for (var i = 0; i < list.length; i++) {
+			for (var j = 0; j < list.length; j++) {
+				if (list[i].pid != list[j].id) {
+					if (addList.length > 0 && !checkIdIsLoad(list[i].id)) {
+						addList = [];
+						break outer;
+					}
+					if (row.find("#" + list[i].pid + "").html()) {
+						telrow = row.find("li#" + list[i].pid + "").find(
+								"ul:first");
+					} else {
+						telrow = row;
+					}
+					if (!checkIsParentElement(list[i].id)) {
+						if (list[i].url) {
+							telrow
+									.append("<li id=\""+list[i].id+"\" pid=\""+list[i].pid+"\"><div style=\"padding: 10px 0px;border-top: 1px solid #b5cfd9;\"><a href=\"javascript:;\" onclick=\"openTab(this);\" id=\""
+											+ list[i].id
+											+ "\" url=\""
+											+ list[i].url
+											+ "\" text=\""
+											+ list[i].text
+											+ "\">"
+											+ list[i].text
+											+ "</a></div><ul></ul></li>");
+						} else {
+							telrow
+									.append("<li id=\""+list[i].id+"\" pid=\""+list[i].pid+"\"><div style=\"padding: 10px 0px;border-top: 1px solid #b5cfd9;\">"
+											+ list[i].text
+											+ "</div><ul></ul></li>");
+						}
+					} else {
+						if (list[i].url) {
+							telrow
+									.append("<li id=\""+list[i].id+"\" pid=\""+list[i].pid+"\"><div style=\"padding: 10px 0px;border-top: 1px solid #b5cfd9;\"><a href=\"javascript:;\" onclick=\"openTab(this);\" id=\""
+											+ list[i].id
+											+ "\" url=\""
+											+ list[i].url
+											+ "\" text=\""
+											+ list[i].text
+											+ "\">"
+											+ list[i].text + "</a></div></li>");
+						} else {
+							telrow
+									.append("<li id=\""+list[i].id+"\" pid=\""+list[i].pid+"\"><div style=\"padding: 10px 0px;border-top: 1px solid #b5cfd9;\">"
+											+ list[i].text + "</div></li>");
+						}
+					}
+					addList.push(list[i].id);
+					var currList = getCurrList(list[i].id);
+					if (currList.length > 0) {
+						setLeftMenu(currList);
+						continue outer;
+					} else {
+						continue outer;
+					}
+				}
+			}
+		}
+	}
+	function getCurrList(id) {
+		var currList = [];
+		for ( var i in dataList) {
+			if (dataList[i].pid == id) {
+				currList.push(dataList[i]);
+			}
+		}
+		return currList;
+	}
+	function checkIsParentElement(id) {
+		var flag = true;
+		for ( var i in dataList) {
+			if (dataList[i].pid == id) {
+				flag = false;
+				break;
+			}
+		}
+		return flag;
+	}
+	function checkIdIsLoad(id) {
+		var flag = true;
+		for ( var i in addList) {
+			if (addList[i] == id) {
+				flag = false;
+				break;
+			}
+		}
+		return flag;
+	}
+	//ldz 自定义左侧菜单 end
+	//左侧菜单触发tap
+	function openTab(obj) {
+		var url = $(obj).attr("url");
+		var text = $(obj).attr("text");
+		f_addTab(obj.id, text, url);
+	}
+	//获取菜单数据源
+	function getSourceMenuList() {
+		$.ajax({
+			url : "rbac/cmUser?method=menu",
+			type : "POST",
+			dataType : "json",
+			async : false,
+			contentType : "application/json; charset=utf-8",
+			success : function(data) {
+				dataList = data;//菜单数据源赋值
+			},
+			error : function(data) {
+				alert("error");
+			}
+		});
+	}
+	window.onload = function() {
+		getSourceMenuList();
+		setNav(dataList);//设置导航菜单
+		setLeftMenu(dataList);
+		var obj = $("#navMenu li.active a")[0];
+		setLeft(obj);//设置左侧菜单
+	}
+</script>
+
+</head>
+<body>
+	<div class="container-fluid contextHeight">
+		<div class="row" id="contentNav">
+			<nav class="navbar navbar-inverse navHeight navBox">
+				<div class="container-fluid">
+					<!-- Brand and toggle get grouped for better mobile display -->
+					<div class="navbar-header">
+						<button type="button" class="navbar-toggle collapsed"
+							data-toggle="collapse"
+							data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+							<span class="sr-only">Toggle navigation</span> <span
+								class="icon-bar"></span> <span class="icon-bar"></span> <span
+								class="icon-bar"></span>
+						</button>
+						<!--<a class="navbar-brand" href="#">Brand</a>-->
+					</div>
+
+					<!-- Collect the nav links, forms, and other content for toggling -->
+					<div class="collapse navbar-collapse"
+						id="bs-example-navbar-collapse-1">
+						<ul id="navMenu" class="nav navbar-nav">
+
+						</ul>
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="#"><span
+									class="glyphicon glyphicon-comment"></span></a></li>
+							<li><a class="navbar-brand" href="#"> <img alt="brand"
+									src="images/tx.png" />
+							</a> <a class="navbar-brand" href="javascript:;" id="unameA"></a> <a
+								class="navbar-brand" href="javascript:;">|</a> <a
+								class="navbar-brand" href="rbac/cmUser?method=logout">退出</a></li>
+						</ul>
+					</div>
+					<!-- /.navbar-collapse -->
+				</div>
+				<!-- /.container-fluid -->
+			</nav>
+		</div>
+		<div class="row" id="contentBody">
+			<div id="left_content"
+				class="col-xs-12 col-sm-12 col-md-2 leftMenuContent">
+				<div style="padding: 25px 0px 0px 25px; text-align: left;">
+					<img src="lib/echarts/img/logonew.png" width="120" height="120" />
+				</div>
+				<div class="leftList">
+					<ul id="tree"></ul>
+					<!-- 					<div position="left" title="功能列表" id="accordion_left" style="overflow:auto;"> -->
+					<!-- 				        <ul id="tree1" style="margin-top:3px;background-color: #F0EEED;" /> -->
+					<!-- 				    </div> -->
+				</div>
+				<div id="openOrHidden" class="open_line">
+					<div id="open_icon" class="open_icon"></div>
+				</div>
+			</div>
+			<div id="main_content"
+				class="col-xs-12 col-sm-12 col-md-10 mainContent">
+				<div id="openOrHiddenReverse" class="open_line_reverse">
+					<div id="open_icon_reverse" class="open_icon_reverse"></div>
+				</div>
+				<div class="row">
+					<div position="center" id="framecenter">
+						<div tabid="home" title="首页" style="height: 300px;">
+							<iframe frameborder="0" name="home" id="home" src="welcome.html"></iframe>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>管理中心</title>
+<link href="../../lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+<link href="../../lib/bootstrap-toastr/toastr.min.css" rel="stylesheet" />
+<script type="text/javascript" src="../../lib/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="../../lib/bootstrap/js/bootstrap.js"></script>
+<script type="text/javascript" src="../../js/common.js" ></script>
+</head>
+<body>
+  <div class="container" style="width: 100%">
+  	  <br/>
+		<button type="button" class="btn btn-primary" onclick="back()">返回</button>
+		<button type="button" class="btn btn-success" onclick="confirm()" id="fhqrid">发货确认</button>
+		<button type="button" class="btn btn-success" onclick="printfhd()"  id="dyfhdid">打印发货单</button>
+	  <hr/>	
+		<form class="form-horizontal" >
+		  <div class="form-group">
+		    <label  class="col-sm-1 control-label">发货单号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_ckdh" placeholder="发货单号" readonly="readonly">
+		    </div>
+		     <label  class="col-sm-1 control-label">提单号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_tdh" placeholder="提单号" readonly="readonly">
+		    </div>
+		    <label  class="col-sm-1 control-label">客户名称</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_khmc" placeholder="客户名称" readonly="readonly">
+		    </div>
+		    <label  class="col-sm-1 control-label">目的港</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_mdh" placeholder="目的港" readonly="readonly">
+		    </div>
+		  </div>
+		   <div class="form-group">
+		    <label  class="col-sm-1 control-label">柜号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_gh" placeholder="柜号" readonly="readonly">
+		    </div>
+		    <label  class="col-sm-1 control-label">封号</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_fh" placeholder="封号" readonly="readonly">
+		    </div>
+		    <label  class="col-sm-1 control-label">发货日期</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_fhrq" placeholder="发货日期" readonly="readonly">
+		    </div>
+		    <label  class="col-sm-1 control-label">单据状态</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_fhzt" placeholder="单据状态" readonly="readonly">
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label  class="col-sm-1 control-label">制单人</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_zdr" placeholder="制单人" readonly="readonly">
+		    </div>
+		    <label  class="col-sm-1 control-label">制单时间</label>
+		    <div class="col-sm-2">
+		      <input type="text" class="form-control" id="order_zdsj" placeholder="制单时间" readonly="readonly">
+		    </div>
+		  </div>
+		</form>
+		<hr />
+		<div class="table-responsive">
+		<table class="table table-striped" id="detailsumid">
+		  	<tr>
+			   <td>客户编号</td>
+			   <td>生产编号</td>
+			   <td>客户UPC码</td>
+			   <td>规格</td>
+			   <td>数量</td>
+			   <td>状态</td>
+			   <td>单净重</td>
+			   <td>单毛重</td>
+			   <td>总净重</td>
+			   <td>总毛重</td>
+			   <td>单位</td>
+			   <td>单体积</td>
+			   <td>总体积</td>
+			   <td>包装方式</td>
+			 </tr>
+		</table>
+		</div>
+	</div>      
+</body>
+<script type="text/javascript">
+	var ckdh="";
+	$(document).ready(function(){
+		 var thisURL = decodeURI(document.URL);    
+		 var getval =thisURL.split('?')[1];  
+		 var showval= getval.split("=")[1]; 
+		 var fhdinfo=showval.split("&");
+		 ckdh=fhdinfo[0];
+		 var fhzt=fhdinfo[8];
+		 if(fhzt=="扫码发货"){
+			 $("#dyfhdid").hide();
+		 }
+		 if(fhzt=="已发货确认"){
+			 $("#fhqrid").hide();
+		 }
+		 $("#order_ckdh").val(fhdinfo[0]);
+		 $("#order_tdh").val(fhdinfo[1]);
+		 $("#order_fhrq").val(fhdinfo[2]);
+		 $("#order_khmc").val(fhdinfo[3]);
+	     $("#order_mdh").val(fhdinfo[4]);
+	     $("#order_gh").val(fhdinfo[5]);
+	     $("#order_fh").val(fhdinfo[6]);
+	     $("#order_zdr").val(fhdinfo[7]);
+	     $("#order_zdsj").val(fhdinfo[8]);
+	     $("#order_fhzt").val(fhdinfo[9]);
+	     getDetailsum(fhdinfo[0]);
+	    
+	})
+	function getDetailsum(order_ckdh){
+		$.ajax({
+	   	   	url:"../../fhdwh/getDetailsum?order_ckdh="+order_ckdh,
+	   	   	type:"POST",
+	   	   	dataType:"xml",  
+	   	   	error: function(xml){  
+	   	       	alert('数据加载失败！');  
+	   	   	},
+	   		success: function(xml){ 
+	   			var barcodehtml="";
+	   	   		$(xml).find("item").each(function(i){ 
+	   	   			var detailsum_khbh=$(this).attr("detailsum_khbh");//客户编号
+	   	   			var barcode_sc=$(this).attr("barcode_sc");//生产编号
+	   	   			var barcode_upc=$(this).attr("barcode_upc");//客户UPC码
+	   	   			var barcode_gg=$(this).attr("barcode_gg");//款式
+	   	   			var detailsum_sl=$(this).attr("detailsum_sl");//规格
+	   	   			var barcode_bmzt=$(this).attr("barcode_bmzt");//偏距
+	   	   			var barcode_djz=($(this).attr("barcode_djz")*1).toFixed(2);//PCD
+	   	   			var barcode_mjz=($(this).attr("barcode_mjz")*1).toFixed(2);//中心孔
+	   	   			var detailsum_zjz=($(this).attr("detailsum_zjz")*1).toFixed(2);//表面状态
+	   	   			var detailsum_zmz=($(this).attr("detailsum_zmz")*1).toFixed(2);//表面状态
+	   	   			var dw="kgs";//单位
+	   	   			var barcode_djt=($(this).attr("barcode_djt")*1).toFixed(2);//表面状态
+	   	   			var detailsum_ztj=($(this).attr("detailsum_ztj")*1).toFixed(2);//表面状态
+	   	   			var barcode_bzfs=$(this).attr("barcode_bzfs");//表面状态
+		   	   		var trhtml="";
+			   	 	trhtml=trhtml+"<tr>";
+			   	 	trhtml=trhtml+"   <td>"+detailsum_khbh+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_sc+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_upc+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_gg+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+detailsum_sl+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_bmzt+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_djz+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_mjz+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+detailsum_zjz+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+detailsum_zmz+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+dw+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_djt+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+detailsum_ztj+"</td>";
+			   	 	trhtml=trhtml+"   <td>"+barcode_bzfs+"</td>";
+			   	 	trhtml=trhtml+" </tr>";
+			   	 	addTr("detailsumid", -1, trhtml);
+	   	    	});
+	   	  	}
+	   	});
+	}
+	function addTr(tab, row, trHtml){
+		 //获取table最后一行 $("#tab tr:last")
+		 //获取table第一行 $("#tab tr").eq(0)
+		 //获取table倒数第二行 $("#tab tr").eq(-2)
+		 var $tr=$("#"+tab+" tr").eq(row);
+		 if($tr.size()==0){
+			 alert("指定的table id或行数不存在！");
+			 return;
+		 }
+		 $tr.after(trHtml);
+	 }
+	function back(){
+		 parent.$("#rightPart").attr("src", "./html/barcode/fhdgl.html");
+		 parent.$(".dhxx").html("发货单管理 ");
+	}
+	function confirm(){
+		var postdata = {};
+	    postdata.orderckdh=ckdh;
+		var	url = "../../fhdwh/qrfhd";
+		// 提交后台保存数据转换为JSON 格式
+		var data = JSON.stringify(postdata);
+		//保存提交后台
+		if (url){
+			ajaxSubmit(url, data, function(data) {
+				if (parseInt(data['status']) > 0) {
+					alert('确认成功');
+					 parent.$("#rightPart").attr("src", "./html/barcode/fhdgl.html");
+					 parent.$(".dhxx").html("发货单管理 ");
+				} else {
+					alert('确认失败');
+				}
+			  });
+		}
+	}
+	
+	function printfhd(){
+// 		 parent.$("#rightPart").attr("src", "./html/barcode/printfhd.html?ckdh="+ckdh);
+		 window.open("./printfhd.html?ckdh="+ckdh)
+	}
+</script>
+</html>
