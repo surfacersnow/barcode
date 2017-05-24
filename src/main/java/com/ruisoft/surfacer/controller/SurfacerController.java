@@ -1,20 +1,13 @@
 package com.ruisoft.surfacer.controller;
-
 import java.io.IOException;
 import java.util.List;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.ruisoft.base.controller.BaseController;
 import com.ruisoft.common.SysCache;
-import com.ruisoft.common.SysConstants;
 import com.ruisoft.core.json.JSONMap;
-import com.ruisoft.surfacer.service.SurfacerService;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
 
 @Controller
 @RequestMapping("/surfacer/")

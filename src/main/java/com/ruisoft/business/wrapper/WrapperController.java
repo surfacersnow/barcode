@@ -1,29 +1,29 @@
-/**
- * 
- */
 package com.ruisoft.business.wrapper;
 import java.io.IOException;
 import java.util.List;
-
+import javax.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.ruisoft.base.controller.BaseController;
+import com.ruisoft.base.dao.BaseDao;
 import com.ruisoft.common.SysCache;
 import com.ruisoft.core.json.JSONMap;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/**
- * @author zhangzhipeng
- *
- */
 @Controller
 @RequestMapping("/wrapper/")
 public class WrapperController extends BaseController {
+	
+	@Resource
+    protected BaseDao baseDAO = null;
+
+    public void setBaseDAO(BaseDao baseDAO) {
+        this.baseDAO = baseDAO;
+    }
+    
 	private static final String RESPONSE_STR = "{\"rows\":{rows},\"total\":\"{total}\"}";
-    private JSONObject reqData = new JSONObject(true);;
+    private JSONObject reqData = new JSONObject(true);
     @RequestMapping("query")
 	    public void surfacer() {
 		 JSONMap<String, Object> returnJson = new JSONMap<String, Object>(JSONMap.TYPE.OBJECT);
